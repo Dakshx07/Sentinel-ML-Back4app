@@ -9,26 +9,28 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "@google/genai": "^1.17.0",
-    "react-dom": "^18.3.1",
-    "octokit": "^3.2.0",
-    "three": "^0.167.0",
-    "@react-three/fiber": "^8.18.0",
-    "@react-three/drei": "^9.114.0",
-    "framer-motion": "^11.3.19",
-    "@uiw/react-codemirror": "^4.23.0",
-    "@uiw/codemirror-theme-atomone": "^4.23.0",
-    "@codemirror/view": "^6.28.0",
-    "@codemirror/state": "^6.4.1",
-    "@codemirror/language": "^6.10.2",
-    "@codemirror/lang-python": "^6.1.6",
     "@codemirror/lang-javascript": "^6.2.2",
-    "diff-match-patch": "^1.0.5"
+    "@codemirror/lang-python": "^6.1.6",
+    "@codemirror/language": "^6.10.2",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.28.0",
+    "@google/genai": "^1.17.0",
+    "@react-three/drei": "^9.114.0",
+    "@react-three/fiber": "^8.18.0",
+    "@uiw/codemirror-theme-atomone": "^4.23.0",
+    "@uiw/react-codemirror": "^4.23.0",
+    "diff-match-patch": "^1.0.5",
+    "framer-motion": "^11.3.19",
+    "octokit": "^3.2.0",
+    "parse": "^7.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.167.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "events": "^3.3.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

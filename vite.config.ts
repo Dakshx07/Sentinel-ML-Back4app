@@ -12,11 +12,27 @@ export default defineConfig(({ mode }) => {
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
+        global: 'globalThis',
       },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
+          // Polyfill Node.js modules for Parse SDK
+          'events': path.resolve(__dirname, 'src/events-shim.ts'),
+        }
+      },
+      optimizeDeps: {
+        include: ['parse'],
+        exclude: []
+      },
+      build: {
+        commonjsOptions: {
+          transformMixedEsModules: true
+        },
+        rollupOptions: {
+          external: ['os'], // Externalize os module
         }
       }
     };

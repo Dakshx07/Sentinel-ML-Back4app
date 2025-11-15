@@ -12,6 +12,52 @@
           NODE_ENV: 'development'
         }
       };
+      
+      // Polyfill EventEmitter for Parse SDK (browser compatibility)
+      (function() {
+        if (typeof window === 'undefined') return;
+        
+        // Simple EventEmitter polyfill for browser (plain JavaScript)
+        function EventEmitter() {
+          this.events = {};
+        }
+        
+        EventEmitter.prototype.on = function(event, listener) {
+          if (!this.events[event]) {
+            this.events[event] = [];
+          }
+          this.events[event].push(listener);
+          return this;
+        };
+        
+        EventEmitter.prototype.emit = function(event) {
+          var args = Array.prototype.slice.call(arguments, 1);
+          if (this.events[event]) {
+            this.events[event].forEach(function(listener) {
+              listener.apply(null, args);
+            });
+          }
+          return this;
+        };
+        
+        EventEmitter.prototype.off = function(event, listener) {
+          if (!this.events[event]) return this;
+          if (listener) {
+            this.events[event] = this.events[event].filter(function(l) {
+              return l !== listener;
+            });
+          } else {
+            delete this.events[event];
+          }
+          return this;
+        };
+        
+        // Make EventEmitter available globally
+        window.EventEmitter = EventEmitter;
+        
+        // Polyfill events module for Parse SDK
+        window.events = { EventEmitter: EventEmitter };
+      })();
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -129,9 +175,7 @@
         }
       })();
     </script>
-    <script src="https://aistudiocdn.com/js-beautify@^1.15.1/js/lib/beautify.js"></script>
-    <script src="https://aistudiocdn.com/js-beautify@^1.15.1/js/lib/beautify-css.js"></script>
-    <script src="https://aistudiocdn.com/js-beautify@^1.15.1/js/lib/beautify-html.js"></script>
+    <!-- js-beautify removed - install via npm if needed -->
     <script src="https://cdn.jsdelivr.net/combine/npm/highlight.js@11.9.0/build/highlight.min.js,npm/highlight.js@11.9.0/build/languages/python.min.js,npm/highlight.js@11.9.0/build/languages/typescript.min.js,npm/highlight.js@11.9.0/build/languages/xml.min.js,npm/highlight.js@11.9.0/build/languages/hcl.min.js,npm/highlight.js@11.9.0/build/languages/diff.min.js"></script>
     <style>
       html {
@@ -317,11 +361,42 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     
-    <!-- UMD Scripts: Moved here to ensure React is on the window object before they execute -->
-    <script src="https://aistudiocdn.com/apexcharts@^3.49.1/dist/apexcharts.min.js"></script>
-    <script src="https://aistudiocdn.com/react-apexcharts@^1.4.1/dist/react-apexcharts.min.js"></script>
-    <script src="https://aistudiocdn.com/swr@^2.2.5/dist/index.js"></script>
-    <script src="https://aistudiocdn.com/jspdf@^2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="https://aistudiocdn.com/html2canvas@^1.4.1/dist/html2canvas.min.js"></script>
+    <!-- UMD Scripts: Loaded after React is available on window -->
+    <script>
+      // Load UMD scripts only after React is available
+      (function() {
+        function loadScript(src, onload) {
+          const script = document.createElement('script');
+          script.src = src;
+          script.onload = onload;
+          script.onerror = function() {
+            console.warn('Failed to load script:', src);
+          };
+          document.body.appendChild(script);
+        }
+        
+        // Wait for React to be available
+        function initScripts() {
+          if (typeof window.React === 'undefined') {
+            setTimeout(initScripts, 50);
+            return;
+          }
+          
+          // Load ApexCharts (UMD)
+          loadScript('https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js', function() {
+            // Load react-apexcharts after ApexCharts
+            loadScript('https://cdn.jsdelivr.net/npm/react-apexcharts@1.4.1/dist/react-apexcharts.min.js');
+          });
+          
+          // Load jsPDF (UMD) - it exposes itself as window.jspdf automatically
+          loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+          
+          // Load html2canvas (UMD) - it exposes itself as window.html2canvas automatically  
+          loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+        }
+        
+        initScripts();
+      })();
+    </script>
   </body>
 </html>
