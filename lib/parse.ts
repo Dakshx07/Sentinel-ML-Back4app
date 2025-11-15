@@ -43,4 +43,3 @@ if (APP_ID && JS_KEY && SERVER_URL) {
 
 export default Parse;
 export { parseInitialized };
-

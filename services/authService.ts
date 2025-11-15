@@ -72,7 +72,13 @@ export const login = async (email: string, password: string): Promise<User> => {
 // LOGOUT
 export const logout = async (): Promise<void> => {
   try {
-    await Parse.User.logOut();
+    // Check if Parse is initialized before attempting logout
+    if (typeof Parse !== 'undefined' && Parse.User) {
+      await Parse.User.logOut();
+    }
+  } catch (e) {
+    // Ignore logout errors - we'll still clear localStorage
+    console.warn('Error during Parse logout:', e);
   } finally {
     localStorage.removeItem(CURRENT_USER_KEY);
   }
@@ -91,11 +97,14 @@ export const getCurrentUser = (): User | null => {
   }
 
   try {
-    const parseUser = Parse.User.current();
-    if (parseUser) {
-      const appUser = parseToAppUser(parseUser);
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(appUser));
-      return appUser;
+    // Check if Parse is initialized before attempting to get current user
+    if (typeof Parse !== 'undefined' && Parse.User) {
+      const parseUser = Parse.User.current();
+      if (parseUser) {
+        const appUser = parseToAppUser(parseUser);
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(appUser));
+        return appUser;
+      }
     }
   } catch (e) {
     console.warn('Parse SDK not initialized or error getting current user:', e);

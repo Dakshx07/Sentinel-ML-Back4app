@@ -1,9 +1,11 @@
+// src/App.tsx
 import React, { useState, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
 import PricingPage from './components/PricingPage';
 import Header from './components/Header';
 import AuthPage from './components/AuthPage';
+import TestML from './components/TestML'; // ← NEW: ML Test Panel
 import { AppView, User, DashboardView, Repository } from './types';
 import { ThemeProvider } from './components/ThemeContext';
 import { ToastProvider } from './components/ToastContext';
@@ -130,7 +132,20 @@ const AppContent: React.FC = () => {
             if (!user) { 
                 return <AuthPage onAuthSuccess={handleAuthSuccess} onNavigate={setView} initialMode="login" />;
             }
-            return <Dashboard user={user} activeView={dashboardView} setActiveView={setDashboardView} onProfileUpdate={handleProfileUpdate} repos={repos} setRepos={setRepos} />;
+            return (
+              <div className="space-y-6">
+                {/* ML TEST PANEL - ONLY IN DASHBOARD */}
+                {dashboardView === 'developerCommandCenter' && <TestML />}
+                <Dashboard 
+                  user={user} 
+                  activeView={dashboardView} 
+                  setActiveView={setDashboardView} 
+                  onProfileUpdate={handleProfileUpdate} 
+                  repos={repos} 
+                  setRepos={setRepos} 
+                />
+              </div>
+            );
         default:
             return <LandingPage onNavigate={handleNavigate} />;
     }
@@ -162,7 +177,6 @@ const AppContent: React.FC = () => {
     </div>
   );
 };
-
 
 const App: React.FC = () => (
   <ThemeProvider>
