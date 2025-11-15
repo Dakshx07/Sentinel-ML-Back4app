@@ -1,0 +1,26 @@
+{
+  "name": "sentinel-bot",
+  "version": "1.0.0",
+  "description": "Backend services and webhook handler for the Sentinel AI code review bot.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "docs:generate": "node -e \"require('./src/docSync').updateDocs().catch(e => console.error(e))\""
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsdoc-to-markdown": "^8.0.1",
+    "nodemailer": "^6.9.13",
+    "octokit": "^3.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
