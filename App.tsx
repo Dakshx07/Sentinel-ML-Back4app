@@ -5,7 +5,6 @@ import Dashboard from './components/Dashboard';
 import PricingPage from './components/PricingPage';
 import Header from './components/Header';
 import AuthPage from './components/AuthPage';
-import TestML from './components/TestML'; // ← NEW: ML Test Panel
 import { AppView, User, DashboardView, Repository } from './types';
 import { ThemeProvider } from './components/ThemeContext';
 import { ToastProvider } from './components/ToastContext';
@@ -134,8 +133,6 @@ const AppContent: React.FC = () => {
             }
             return (
               <div className="space-y-6">
-                {/* ML TEST PANEL - ONLY IN DASHBOARD */}
-                {dashboardView === 'developerCommandCenter' && <TestML />}
                 <Dashboard 
                   user={user} 
                   activeView={dashboardView} 
