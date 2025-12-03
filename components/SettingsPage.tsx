@@ -35,7 +35,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
         setApiKey(localStorage.getItem(API_KEY_LOCAL_STORAGE_KEY) || '');
         setGithubPat(localStorage.getItem(GITHUB_PAT_LOCAL_STORAGE_KEY) || '');
         setMaxOutputTokens(localStorage.getItem(MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY) || '');
-        if(user) {
+        if (user) {
             setUsername(user.username);
         }
     }, [user]);
@@ -46,7 +46,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
             return () => clearTimeout(timer);
         }
     };
-    
+
     useEffect(() => createSaveEffect(instructionSaveState, setInstructionSaveState), [instructionSaveState]);
     useEffect(() => createSaveEffect(apiKeySaveState, setApiKeySaveState), [apiKeySaveState]);
     useEffect(() => createSaveEffect(usernameSaveState, setUsernameSaveState), [usernameSaveState]);
@@ -75,7 +75,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
             return;
         }
         setGithubPatSaveState('saving');
-        localStorage.setItem(GITHUB_PAT_LOCAL_STORAGE_KEY, githubPat); 
+        localStorage.setItem(GITHUB_PAT_LOCAL_STORAGE_KEY, githubPat);
         try {
             const profile = await getAuthenticatedUserProfile();
             onProfileUpdate({ github: profile, username: profile.name || profile.login });
@@ -90,8 +90,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
             setGithubPatSaveState('idle');
         }
     };
-    
-    const SaveButton: React.FC<{state: SaveState, label: string, onSave: () => void, className?: string}> = ({ state, label, onSave, className }) => (
+
+    const SaveButton: React.FC<{ state: SaveState, label: string, onSave: () => void, className?: string }> = ({ state, label, onSave, className }) => (
         <button onClick={onSave} disabled={state !== 'idle'} className={`btn-primary text-center transition-all ${className}`}>
             {state === 'idle' && label}
             {state === 'saving' && 'Saving...'}
@@ -102,8 +102,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
     return (
         <div className="h-full w-full">
             <div className="bg-light-secondary dark:bg-dark-secondary rounded-lg border border-gray-200 dark:border-white/10 p-6 md:p-8 max-w-4xl mx-auto space-y-12">
-                
-                 {user && (
+
+                {user && (
                     <div>
                         <h2 className="text-3xl font-bold text-dark-text dark:text-white font-heading mb-4">Profile Settings</h2>
                         <div className="space-y-4">
@@ -120,7 +120,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
                             </div>
                         </div>
                     </div>
-                 )}
+                )}
 
                 <div>
                     <h2 className="text-3xl font-bold text-dark-text dark:text-white font-heading mb-4">Integrations</h2>
@@ -148,7 +148,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
                                 Provide a <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:underline">Classic personal access token</a> with the full <code className="bg-gray-200 dark:bg-black/30 px-1.5 py-0.5 rounded-md font-mono text-xs">'repo'</code> and <code className="bg-gray-200 dark:bg-black/30 px-1.5 py-0.5 rounded-md font-mono text-xs">'security_events'</code> scopes. Fine-grained tokens are not recommended.
                             </p>
                             <div className="mt-4">
-                                 <input type="password"
+                                <input type="password"
                                     className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-3 font-mono text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
                                     value={githubPat}
                                     onChange={(e) => { setGithubPat(e.target.value); setGithubPatSaveState('idle'); }}
@@ -175,10 +175,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
                         placeholder="Enter your Gemini API key here"
                     />
                     <div className="mt-4 flex items-center justify-end">
-                         <SaveButton state={apiKeySaveState} label="Save Key" onSave={() => handleSave(apiKey, API_KEY_LOCAL_STORAGE_KEY, setApiKeySaveState)} className="w-32" />
+                        <SaveButton state={apiKeySaveState} label="Save Key" onSave={() => handleSave(apiKey, API_KEY_LOCAL_STORAGE_KEY, setApiKeySaveState)} className="w-32" />
                     </div>
                 </div>
-                
+
                 <div>
                     <h2 className="text-3xl font-bold text-dark-text dark:text-white font-heading mb-4">AI Agent Configuration</h2>
                     <div className="space-y-6">
@@ -194,11 +194,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
                                 <button onClick={() => setInstruction(DEFAULT_SYSTEM_INSTRUCTION)} className="bg-gray-200 dark:bg-white/5 hover:bg-gray-300 dark:hover:bg-white/10 text-dark-text dark:text-white font-semibold py-2 px-4 rounded-md transition-colors">
                                     Reset to Default
                                 </button>
-                                <SaveButton state={instructionSaveState} label="Save Instruction" onSave={() => handleSave(instruction, SYSTEM_INSTRUCTION_LOCAL_STORAGE_KEY, setInstructionSaveState)} className="w-36"/>
+                                <SaveButton state={instructionSaveState} label="Save Instruction" onSave={() => handleSave(instruction, SYSTEM_INSTRUCTION_LOCAL_STORAGE_KEY, setInstructionSaveState)} className="w-36" />
                             </div>
                         </div>
 
-                         <div className="mt-6">
+                        <div className="mt-6">
                             <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading mb-2">Model Parameters</h3>
                             <label htmlFor="max-tokens" className="block text-sm font-medium text-medium-dark-text dark:text-medium-text mb-2"> Max Output Tokens </label>
                             <p className="text-xs text-medium-dark-text dark:text-medium-text mb-3"> Limit the AI's response length. Lower values are faster but may be less detailed. Leave blank for no limit. </p>
@@ -210,7 +210,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
                                 min="0"
                             />
                             <div className="mt-4 flex items-center justify-end">
-                                <SaveButton state={maxOutputTokensSaveState} label="Save Tokens" onSave={() => handleSave(maxOutputTokens, MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY, setMaxOutputTokensSaveState)} className="w-36"/>
+                                <SaveButton state={maxOutputTokensSaveState} label="Save Tokens" onSave={() => handleSave(maxOutputTokens, MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY, setMaxOutputTokensSaveState)} className="w-36" />
                             </div>
                         </div>
                     </div>

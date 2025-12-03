@@ -1,8 +1,8 @@
 import React from 'react';
-import { 
-    StudioIcon, 
-    GitBranchIcon, 
-    SettingsIcon, 
+import {
+    StudioIcon,
+    GitBranchIcon,
+    SettingsIcon,
     HistoryIcon,
     RepoIcon,
     DocsIcon,
@@ -41,7 +41,7 @@ const NavLink: React.FC<NavLinkProps> = ({ id, label, icon, isActive, isCollapse
             title={label}
         >
             <span className="flex-shrink-0 w-5 h-5">{icon}</span>
-            <motion.span 
+            <motion.span
                 className="ml-4 truncate"
                 animate={{ opacity: isCollapsed ? 0 : 1, width: isCollapsed ? 0 : 'auto' }}
                 transition={{ duration: 0.2, delay: isCollapsed ? 0 : 0.1 }}
@@ -72,9 +72,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapse
         { id: 'studio' as DashboardView, label: 'Studio Sandbox', icon: <StudioIcon /> },
         { id: 'gitops' as DashboardView, label: 'GitOps Scanner', icon: <GitBranchIcon /> },
         { id: 'commits' as DashboardView, label: 'Commit History', icon: <HistoryIcon /> },
-        { id: 'pushpull' as DashboardView, label: 'PR Review', icon: <PullRequestIcon />},
+        { id: 'pushpull' as DashboardView, label: 'PR Review', icon: <PullRequestIcon /> },
     ];
-    
+
     const aiAgentsNavItems = [
         { id: 'refactor' as DashboardView, label: 'Auto-Refactor Agent', icon: <BrainCircuitIcon /> },
         { id: 'workflowStreamliner' as DashboardView, label: 'Repo Chatbot', icon: <CommandLineIcon /> },
@@ -92,10 +92,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapse
         { id: 'settings' as DashboardView, label: 'Settings', icon: <SettingsIcon /> },
     ];
 
-    const NavSection: React.FC<{title?: string, items: {id: DashboardView, label: string, icon: React.ReactNode}[]}> = ({title, items}) => (
+    const NavSection: React.FC<{ title?: string, items: { id: DashboardView, label: string, icon: React.ReactNode }[] }> = ({ title, items }) => (
         <div>
             {title && (
-                 <motion.p 
+                <motion.p
                     className="px-3 pt-6 pb-2 text-xs font-semibold text-medium-dark-text dark:text-medium-text uppercase tracking-wider"
                     animate={{ opacity: isCollapsed ? 0 : 1, width: isCollapsed ? 0 : 'auto' }}
                     transition={{ duration: 0.2, delay: isCollapsed ? 0 : 0.1 }}
@@ -108,7 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapse
             </ul>
         </div>
     );
-    
+
     return (
         <motion.aside
             initial={false}
@@ -125,12 +125,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapse
 
             <div className="p-3 mt-auto border-t border-gray-200 dark:border-white/10">
                 <NavSection items={accountNavItems} />
-                 <button 
+                <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className="w-full flex items-center justify-center p-2.5 mt-2 rounded-lg text-medium-dark-text dark:text-medium-text hover:bg-gray-200 dark:hover:bg-dark-primary"
                     title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 >
-                    {isCollapsed ? <DoubleArrowRightIcon className="w-5 h-5"/> : <DoubleArrowLeftIcon className="w-5 h-5"/>}
+                    {isCollapsed ? <DoubleArrowRightIcon className="w-5 h-5" /> : <DoubleArrowLeftIcon className="w-5 h-5" />}
                 </button>
             </div>
         </motion.aside>

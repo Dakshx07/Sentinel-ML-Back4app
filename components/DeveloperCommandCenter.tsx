@@ -141,7 +141,7 @@ const DeveloperCommandCenter: React.FC<DeveloperCommandCenterProps> = ({ user, r
     }, [repos, addToast]);
 
     const getActivityIcon = (type: IActivityLog['type']) => {
-        switch(type) {
+        switch (type) {
             case 'NEW_VULNERABILITY': return <ShieldIcon severity="Critical" className="w-5 h-5 text-red-500" />;
             case 'AUTOREVIEW_ENABLED': return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
             case 'SCAN_COMPLETED': return <CpuChipIcon className="w-5 h-5 text-blue-500" />;
@@ -156,7 +156,7 @@ const DeveloperCommandCenter: React.FC<DeveloperCommandCenterProps> = ({ user, r
     return (
         <div className="h-full w-full space-y-6 animate-fade-in-up">
             <h1 className="text-3xl font-bold text-dark-text dark:text-white font-heading">Developer Command Center</h1>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard title="Total Repositories" value={stats.totalRepos} icon={<RepoIcon className="w-6 h-6" />} />
                 <StatCard title="Auto-Reviews Enabled" value={stats.autoReviewCount} icon={<CheckCircleIcon className="w-6 h-6" />} />
@@ -188,7 +188,7 @@ const DeveloperCommandCenter: React.FC<DeveloperCommandCenterProps> = ({ user, r
                                     onClick={() => {
                                         const repo = repos.find(r => r.id === vuln.repoId);
                                         if (repo) {
-                                            localStorage.setItem('sentinel-gitops-preload', JSON.stringify({ 
+                                            localStorage.setItem('sentinel-gitops-preload', JSON.stringify({
                                                 repoUrl: `https://github.com/${repo.full_name}`,
                                                 filePath: vuln.filePath,
                                             }));
@@ -209,7 +209,7 @@ const DeveloperCommandCenter: React.FC<DeveloperCommandCenterProps> = ({ user, r
                 </motion.div>
 
                 <div className="space-y-6">
-                     <motion.div
+                    <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
@@ -223,7 +223,7 @@ const DeveloperCommandCenter: React.FC<DeveloperCommandCenterProps> = ({ user, r
                     </motion.div>
                 </div>
             </div>
-            
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -244,7 +244,7 @@ const DeveloperCommandCenter: React.FC<DeveloperCommandCenterProps> = ({ user, r
                             <span className="text-xs text-medium-dark-text dark:text-medium-text">{log.time}</span>
                         </li>
                     )) : (
-                         <p className="text-center py-4 text-medium-dark-text dark:text-medium-text">No recent activity.</p>
+                        <p className="text-center py-4 text-medium-dark-text dark:text-medium-text">No recent activity.</p>
                     )}
                 </ul>
             </motion.div>

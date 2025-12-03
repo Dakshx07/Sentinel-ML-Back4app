@@ -9,7 +9,7 @@ const HeroAnimation: React.FC = () => {
 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-        
+
         const setCanvasSize = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -45,7 +45,7 @@ const HeroAnimation: React.FC = () => {
             animationFrameId = requestAnimationFrame(draw);
         };
         draw();
-        
+
         const handleResize = () => {
             setCanvasSize();
             // Recalculate columns and drops array on resize
@@ -62,7 +62,7 @@ const HeroAnimation: React.FC = () => {
                 canvasRef.current.style.transform = `translateY(${window.scrollY * 0.5}px)`;
             }
         };
-        
+
         window.addEventListener('resize', handleResize);
         window.addEventListener('scroll', handleScroll);
 
@@ -75,9 +75,9 @@ const HeroAnimation: React.FC = () => {
     }, []);
 
     return (
-        <canvas 
-            ref={canvasRef} 
-            className="absolute top-0 left-0 w-full h-full z-0 opacity-50 dark:opacity-100" 
+        <canvas
+            ref={canvasRef}
+            className="absolute top-0 left-0 w-full h-full z-0 opacity-50 dark:opacity-100"
         />
     );
 };

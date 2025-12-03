@@ -45,27 +45,27 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
     };
     reader.readAsText(file);
   };
-  
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragging(true);
+    e.preventDefault();
+    setIsDragging(true);
   };
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragging(false);
+    e.preventDefault();
+    setIsDragging(false);
   };
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragging(false);
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          handleFile(e.dataTransfer.files[0]);
-          e.dataTransfer.clearData();
-      }
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+      e.dataTransfer.clearData();
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-        handleFile(e.target.files[0]);
+      handleFile(e.target.files[0]);
     }
   };
 
@@ -84,24 +84,24 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         return (
           <div className="p-4 flex flex-col h-full">
             <h3 className="text-lg font-bold text-dark-text dark:text-light-text font-heading mb-2">Paste or Upload Code</h3>
-            
-            <div 
-                className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer mb-4 ${isDragging ? 'border-brand-purple bg-brand-purple/10' : 'border-gray-300 dark:border-white/20 hover:border-brand-cyan'}`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
+
+            <div
+              className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer mb-4 ${isDragging ? 'border-brand-purple bg-brand-purple/10' : 'border-gray-300 dark:border-white/20 hover:border-brand-cyan'}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
             >
-                <UploadIcon className="w-8 h-8 mx-auto text-medium-dark-text dark:text-medium-text" />
-                <p className="mt-2 text-sm text-medium-dark-text dark:text-medium-text">
-                    Drag & drop a file or <span className="font-semibold text-brand-purple">click to upload</span>
-                </p>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                />
+              <UploadIcon className="w-8 h-8 mx-auto text-medium-dark-text dark:text-medium-text" />
+              <p className="mt-2 text-sm text-medium-dark-text dark:text-medium-text">
+                Drag & drop a file or <span className="font-semibold text-brand-purple">click to upload</span>
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
             </div>
 
             <textarea
@@ -111,24 +111,24 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
               placeholder="Paste your code here..."
             />
             <div className="mt-4 h-10 flex items-center justify-center text-center px-4">
-                {isAutoAnalyzing ? (
-                    <div className="flex items-center space-x-2 text-sm text-medium-dark-text dark:text-medium-text">
-                        <SpinnerIcon className="w-4 h-4" />
-                        <span>Waiting for you to finish typing...</span>
-                    </div>
-                ) : isLoading ? (
-                    <div className="flex items-center space-x-2 text-sm text-medium-dark-text dark:text-medium-text">
-                        <SpinnerIcon className="w-4 h-4" />
-                        <span>Analyzing code...</span>
-                    </div>
-                ) : snippet ? (
-                    <div className="flex items-center space-x-2 text-sm text-green-600 dark:text-green-400">
-                        <CheckIcon className="w-4 h-4" />
-                        <span>Analysis is up to date</span>
-                    </div>
-                ) : (
-                    <p className="text-sm text-medium-dark-text dark:text-medium-text">Paste or upload code to begin analysis.</p>
-                )}
+              {isAutoAnalyzing ? (
+                <div className="flex items-center space-x-2 text-sm text-medium-dark-text dark:text-medium-text">
+                  <SpinnerIcon className="w-4 h-4" />
+                  <span>Waiting for you to finish typing...</span>
+                </div>
+              ) : isLoading ? (
+                <div className="flex items-center space-x-2 text-sm text-medium-dark-text dark:text-medium-text">
+                  <SpinnerIcon className="w-4 h-4" />
+                  <span>Analyzing code...</span>
+                </div>
+              ) : snippet ? (
+                <div className="flex items-center space-x-2 text-sm text-green-600 dark:text-green-400">
+                  <CheckIcon className="w-4 h-4" />
+                  <span>Analysis is up to date</span>
+                </div>
+              ) : (
+                <p className="text-sm text-medium-dark-text dark:text-medium-text">Paste or upload code to begin analysis.</p>
+              )}
             </div>
           </div>
         );
@@ -146,17 +146,17 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
               ))}
             </div>
             {selectedRepo && (
-                <div className="mt-4 border-t border-gray-200 dark:border-white/10 pt-4">
-                    <h4 className="text-md font-bold text-dark-text dark:text-light-text font-heading mb-2">Files</h4>
-                    <ul className="space-y-1">
-                        {selectedRepo.files.map(file => (
-                            <li key={file.name} onClick={() => setActiveFile(file)} className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer ${activeFile?.name === file.name ? 'bg-brand-purple/20' : 'hover:bg-gray-100 dark:hover:bg-white/10'}`}>
-                                <CodeIcon className="w-4 h-4 text-medium-dark-text dark:text-medium-text" />
-                                <span className="text-sm text-dark-text dark:text-white">{file.name}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+              <div className="mt-4 border-t border-gray-200 dark:border-white/10 pt-4">
+                <h4 className="text-md font-bold text-dark-text dark:text-light-text font-heading mb-2">Files</h4>
+                <ul className="space-y-1">
+                  {selectedRepo.files.map(file => (
+                    <li key={file.name} onClick={() => setActiveFile(file)} className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer ${activeFile?.name === file.name ? 'bg-brand-purple/20' : 'hover:bg-gray-100 dark:hover:bg-white/10'}`}>
+                      <CodeIcon className="w-4 h-4 text-medium-dark-text dark:text-medium-text" />
+                      <span className="text-sm text-dark-text dark:text-white">{file.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         );

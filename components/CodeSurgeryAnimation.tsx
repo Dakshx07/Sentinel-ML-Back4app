@@ -37,7 +37,7 @@ const CodeSurgeryAnimation: React.FC = () => {
     const [stage, setStage] = useState<SurgeryStage>('idle');
     const [log, setLog] = useState<string[]>([]);
     const [vitals, setVitals] = useState({ status: 'Stable', vulns: 'Unknown', color: 'text-green-400' });
-    
+
     const codeRef = useRef<HTMLElement>(null);
 
     const code = useMemo(() => {
@@ -81,7 +81,7 @@ const CodeSurgeryAnimation: React.FC = () => {
         setTimeout(() => {
             setLog(l => [...l, "Injection vector neutralized."]);
         }, 6500);
-        
+
         setTimeout(() => {
             setStage('closing');
             setVitals({ status: 'Stabilizing...', vulns: '0', color: 'text-green-400' });
@@ -100,7 +100,7 @@ const CodeSurgeryAnimation: React.FC = () => {
         setLog([]);
         setVitals({ status: 'Stable', vulns: 'Unknown', color: 'text-green-400' });
     };
-    
+
     const getLogIcon = (index: number) => {
         if (stage === 'secure' && index === log.length - 1) return <CheckCircleIcon className="text-green-400" />;
         if (stage === 'diagnosing' && index === log.length - 1) return <ShieldIcon severity="Critical" />;
@@ -111,11 +111,11 @@ const CodeSurgeryAnimation: React.FC = () => {
         <section id="live-demo" className="py-24 bg-light-secondary dark:bg-dark-primary relative overflow-hidden">
             <div className="absolute inset-0 bg-grid-pattern opacity-20 dark:opacity-10"></div>
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-light-secondary dark:to-dark-primary"></div>
-            
+
             <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
                 <h2 className="text-4xl md:text-5xl font-bold text-dark-text dark:text-white font-heading mb-4">Open Code Surgery</h2>
                 <p className="max-w-3xl mx-auto text-lg text-medium-dark-text dark:text-medium-text mb-12">
-                   This is not a demo. It's a live medical procedure on code. Watch Sentinel's AI surgeons find, fix, and secure a critical vulnerability in real-time.
+                    This is not a demo. It's a live medical procedure on code. Watch Sentinel's AI surgeons find, fix, and secure a critical vulnerability in real-time.
                 </p>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto text-left">
@@ -123,12 +123,12 @@ const CodeSurgeryAnimation: React.FC = () => {
                     <div className="lg:col-span-1 space-y-4">
                         <VitalsMonitor status={vitals.status} vulns={vitals.vulns} statusColor={vitals.color} />
                         <div className="glass-effect p-4 rounded-lg border border-white/10 h-80 flex flex-col">
-                             <p className="text-xs text-medium-text uppercase tracking-wider mb-2 flex-shrink-0">AI Surgeon's Log</p>
-                             <ul className="text-sm text-light-text font-mono space-y-2 overflow-y-auto flex-grow pr-2">
+                            <p className="text-xs text-medium-text uppercase tracking-wider mb-2 flex-shrink-0">AI Surgeon's Log</p>
+                            <ul className="text-sm text-light-text font-mono space-y-2 overflow-y-auto flex-grow pr-2">
                                 <AnimatePresence>
-                                  {log.map((msg, i) => <LogEntry key={i} message={msg} icon={getLogIcon(i)} />)}
+                                    {log.map((msg, i) => <LogEntry key={i} message={msg} icon={getLogIcon(i)} />)}
                                 </AnimatePresence>
-                             </ul>
+                            </ul>
                         </div>
                     </div>
 
@@ -139,22 +139,22 @@ const CodeSurgeryAnimation: React.FC = () => {
                             <div>
                                 {stage === 'idle' && <button onClick={runSequence} className="btn-primary py-2 px-4">Start Procedure</button>}
                                 {stage === 'secure' && <button onClick={reset} className="btn-secondary py-2 px-4">Run Again</button>}
-                                {stage !== 'idle' && stage !== 'secure' && 
+                                {stage !== 'idle' && stage !== 'secure' &&
                                     <button disabled className="btn-primary py-2 px-4 opacity-50 flex items-center"><SpinnerIcon className="w-4 h-4 mr-2" /> In Progress...</button>
                                 }
                             </div>
                         </div>
-                        
+
                         <div className="bg-light-primary dark:bg-dark-primary rounded-md p-4 font-mono text-sm relative overflow-hidden flex-grow">
                             <AnimatePresence>
-                            {stage === 'scanning' &&
-                                <motion.div 
-                                    initial={{ top: '0%' }} animate={{ top: '100%' }}
-                                    transition={{ duration: 2, ease: 'linear' }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute left-0 w-full h-0.5 bg-brand-cyan/70 shadow-[0_0_10px_theme(colors.brand-cyan)]"
-                                />
-                            }
+                                {stage === 'scanning' &&
+                                    <motion.div
+                                        initial={{ top: '0%' }} animate={{ top: '100%' }}
+                                        transition={{ duration: 2, ease: 'linear' }}
+                                        exit={{ opacity: 0 }}
+                                        className="absolute left-0 w-full h-0.5 bg-brand-cyan/70 shadow-[0_0_10px_theme(colors.brand-cyan)]"
+                                    />
+                                }
                             </AnimatePresence>
                             <pre className="whitespace-pre-wrap break-words"><code ref={codeRef}>
                                 {code.map((line, i) => (

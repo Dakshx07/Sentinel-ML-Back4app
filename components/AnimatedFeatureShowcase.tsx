@@ -6,14 +6,14 @@ type Feature = 'analysis' | 'fixes' | 'cicd' | 'gitops';
 
 const AnimatedFeatureShowcase: React.FC = () => {
     const [activeFeature, setActiveFeature] = useState<Feature>('analysis');
-    
+
     const features = [
-        { id: 'analysis' as Feature, title: 'Deep Code Analysis', icon: <BrainCircuitIcon className="w-6 h-6"/>, description: "Sentinel's AI goes beyond static checks, understanding your code's context and logic to find vulnerabilities others miss." },
-        { id: 'fixes' as Feature, title: 'Instant, Actionable Fixes', icon: <BoltIcon className="w-6 h-6"/>, description: "Don't just find problems—fix them. Get immediate, production-ready code suggestions to resolve issues in seconds." },
-        { id: 'cicd' as Feature, title: 'Seamless CI/CD Integration', icon: <CpuChipIcon className="w-6 h-6"/>, description: "Integrate Sentinel directly into your pipeline to automate security reviews and block vulnerabilities before they are merged." },
-        { id: 'gitops' as Feature, title: 'AI-Powered GitOps', icon: <GitBranchIcon className="w-6 h-6"/>, description: "Review pull requests, analyze commit history, and create fix PRs with a single click, all powered by AI." }
+        { id: 'analysis' as Feature, title: 'Deep Code Analysis', icon: <BrainCircuitIcon className="w-6 h-6" />, description: "Sentinel's AI goes beyond static checks, understanding your code's context and logic to find vulnerabilities others miss." },
+        { id: 'fixes' as Feature, title: 'Instant, Actionable Fixes', icon: <BoltIcon className="w-6 h-6" />, description: "Don't just find problems—fix them. Get immediate, production-ready code suggestions to resolve issues in seconds." },
+        { id: 'cicd' as Feature, title: 'Seamless CI/CD Integration', icon: <CpuChipIcon className="w-6 h-6" />, description: "Integrate Sentinel directly into your pipeline to automate security reviews and block vulnerabilities before they are merged." },
+        { id: 'gitops' as Feature, title: 'AI-Powered GitOps', icon: <GitBranchIcon className="w-6 h-6" />, description: "Review pull requests, analyze commit history, and create fix PRs with a single click, all powered by AI." }
     ];
-    
+
     const renderVisualization = () => {
         const visualizationVariants = {
             initial: { opacity: 0, y: 20 },
@@ -68,30 +68,30 @@ const AnimatedFeatureShowcase: React.FC = () => {
                             <span className="text-green-400">🚀 Deploy</span>
                         </div>
                     )}
-                     {activeFeature === 'gitops' && (
+                    {activeFeature === 'gitops' && (
                         <div className="flex flex-col h-full justify-center text-center">
-                           <motion.p className="text-brand-cyan" initial={{ opacity: 0, y:10 }} animate={{ opacity: 1, y:0 }} transition={{ delay: 0.1 }}>PR #125: "Add User Profile Page"</motion.p>
-                           <motion.p className="text-yellow-400 mt-2" initial={{ opacity: 0, y:10 }} animate={{ opacity: 1, y:0 }} transition={{ delay: 0.5 }}>Sentinel: Found XSS vulnerability in `Profile.js`</motion.p>
-                           <motion.p className="text-green-400 mt-2" initial={{ opacity: 0, y:10 }} animate={{ opacity: 1, y:0 }} transition={{ delay: 1.0 }}>Sentinel: Pushed commit `a4e3f2d` with a suggested fix.</motion.p>
+                            <motion.p className="text-brand-cyan" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>PR #125: "Add User Profile Page"</motion.p>
+                            <motion.p className="text-yellow-400 mt-2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>Sentinel: Found XSS vulnerability in `Profile.js`</motion.p>
+                            <motion.p className="text-green-400 mt-2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}>Sentinel: Pushed commit `a4e3f2d` with a suggested fix.</motion.p>
                         </div>
                     )}
                 </motion.div>
             </AnimatePresence>
         );
     };
-    
-    return(
+
+    return (
         <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-5 space-y-4">
                     {features.map(feature => (
-                        <motion.button 
-                            key={feature.id} 
+                        <motion.button
+                            key={feature.id}
                             onClick={() => setActiveFeature(feature.id)}
                             whileHover={{ scale: 1.02 }}
                             className={`w-full text-left p-6 rounded-2xl transition-colors duration-200 border-2 ${activeFeature === feature.id ? 'bg-light-secondary dark:bg-dark-secondary border-brand-purple' : 'bg-light-primary dark:bg-dark-primary border-gray-200 dark:border-white/10 hover:border-brand-purple/50'}`}
                         >
-                           <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-4">
                                 <div className={`p-3 rounded-lg transition-colors duration-300 ${activeFeature === feature.id ? 'bg-brand-purple text-white' : 'bg-light-secondary dark:bg-dark-secondary text-brand-cyan'}`}>
                                     {feature.icon}
                                 </div>
@@ -99,7 +99,7 @@ const AnimatedFeatureShowcase: React.FC = () => {
                                     <h3 className="font-bold text-lg text-dark-text dark:text-white">{feature.title}</h3>
                                     <p className="text-sm text-medium-dark-text dark:text-medium-text mt-1">{feature.description}</p>
                                 </div>
-                           </div>
+                            </div>
                         </motion.button>
                     ))}
                 </div>

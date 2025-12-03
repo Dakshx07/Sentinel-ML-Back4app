@@ -32,28 +32,28 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, onToggleAutoReview, onViewPul
 
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
         <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-medium-dark-text dark:text-medium-text">
-            <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
-                <div className="flex items-center space-x-1.5" title={`${repo.language}`}>
-                    <LanguageDot language={repo.language} />
-                    <span>{repo.language || 'N/A'}</span>
-                </div>
-                <div className="flex items-center space-x-1" title={`${repo.stargazers_count} stars`}>
-                    <StarIcon className="w-4 h-4 text-yellow-500" />
-                    <span>{repo.stargazers_count}</span>
-                </div>
-                <div className="flex items-center space-x-1" title={`${repo.watchers_count} watchers`}>
-                    <EyeIcon className="w-4 h-4" />
-                    <span>{repo.watchers_count}</span>
-                </div>
-                <div className="flex items-center space-x-1" title={`${repo.open_issues_count} open issues`}>
-                    <ErrorIcon className="w-4 h-4 text-orange-500" />
-                    <span>{repo.open_issues_count}</span>
-                </div>
+          <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
+            <div className="flex items-center space-x-1.5" title={`${repo.language}`}>
+              <LanguageDot language={repo.language} />
+              <span>{repo.language || 'N/A'}</span>
             </div>
-            <div className="flex items-center space-x-2">
-                <span className="text-xs font-medium">Auto Review</span>
-                <ToggleSwitch enabled={repo.autoReview} setEnabled={(enabled) => onToggleAutoReview(repo.id, enabled)} />
+            <div className="flex items-center space-x-1" title={`${repo.stargazers_count} stars`}>
+              <StarIcon className="w-4 h-4 text-yellow-500" />
+              <span>{repo.stargazers_count}</span>
             </div>
+            <div className="flex items-center space-x-1" title={`${repo.watchers_count} watchers`}>
+              <EyeIcon className="w-4 h-4" />
+              <span>{repo.watchers_count}</span>
+            </div>
+            <div className="flex items-center space-x-1" title={`${repo.open_issues_count} open issues`}>
+              <ErrorIcon className="w-4 h-4 text-orange-500" />
+              <span>{repo.open_issues_count}</span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-medium">Auto Review</span>
+            <ToggleSwitch enabled={repo.autoReview} setEnabled={(enabled) => onToggleAutoReview(repo.id, enabled)} />
+          </div>
         </div>
       </div>
     </div>

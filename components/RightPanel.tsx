@@ -34,15 +34,15 @@ const SeverityBadge: React.FC<{ severity: string; count: number }> = ({ severity
 };
 
 const IssueCard: React.FC<{
-    issue: AnalysisIssue;
-    isSelected: boolean;
-    onSelect: () => void;
-    onApplyFix: () => void;
-    isFixApplied: boolean;
-    onCommitFix: () => void;
-    onRevertFix: () => void;
-    isCommitting: boolean;
-    hasActiveFix: boolean;
+  issue: AnalysisIssue;
+  isSelected: boolean;
+  onSelect: () => void;
+  onApplyFix: () => void;
+  isFixApplied: boolean;
+  onCommitFix: () => void;
+  onRevertFix: () => void;
+  isCommitting: boolean;
+  hasActiveFix: boolean;
 }> = ({ issue, isSelected, onSelect, onApplyFix, isFixApplied, onCommitFix, onRevertFix, isCommitting, hasActiveFix }) => {
   const isInvalidLine = issue.line === -1;
   return (
@@ -53,18 +53,18 @@ const IssueCard: React.FC<{
           <div className="flex-grow min-w-0">
             <p className="font-semibold text-dark-text dark:text-white truncate">{issue.title}</p>
             <div className="text-xs text-medium-dark-text dark:text-medium-text mt-1 flex items-center flex-wrap gap-x-2 gap-y-1">
-                {issue.filePath && (
-                    <span className="font-mono bg-gray-200 dark:bg-black/20 px-1.5 py-0.5 rounded truncate inline-block max-w-full" title={issue.filePath}>
-                        {issue.filePath}
-                    </span>
-                )}
-                <span className="flex-shrink-0 whitespace-nowrap">
-                    {isInvalidLine ? (
-                        <span className="text-yellow-500 dark:text-yellow-400 font-semibold">Invalid Line</span> 
-                    ) : (
-                        `Line ${issue.line}`
-                    )} &bull; {issue.severity}
+              {issue.filePath && (
+                <span className="font-mono bg-gray-200 dark:bg-black/20 px-1.5 py-0.5 rounded truncate inline-block max-w-full" title={issue.filePath}>
+                  {issue.filePath}
                 </span>
+              )}
+              <span className="flex-shrink-0 whitespace-nowrap">
+                {isInvalidLine ? (
+                  <span className="text-yellow-500 dark:text-yellow-400 font-semibold">Invalid Line</span>
+                ) : (
+                  `Line ${issue.line}`
+                )} &bull; {issue.severity}
+              </span>
             </div>
           </div>
           <ChevronDownIcon className={`w-5 h-5 text-medium-dark-text dark:text-medium-text flex-shrink-0 transition-transform duration-300 ${isSelected ? 'rotate-180' : ''}`} />
@@ -80,31 +80,31 @@ const IssueCard: React.FC<{
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             {isFixApplied ? (
-                <>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onCommitFix(); }}
-                        className="btn-primary text-xs py-1 px-3 disabled:opacity-50"
-                        disabled={isCommitting}
-                    >
-                        {isCommitting ? 'Creating PR...' : 'Push Fix & Create PR'}
-                    </button>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onRevertFix(); }}
-                        className="bg-gray-200 dark:bg-white/10 text-dark-text dark:text-white font-semibold text-xs py-1 px-3 rounded-md transition-colors hover:bg-gray-300 dark:hover:bg-white/20 disabled:opacity-50"
-                        disabled={isCommitting}
-                    >
-                        Revert
-                    </button>
-                </>
-            ) : (
-                 <button 
-                    onClick={(e) => { e.stopPropagation(); onApplyFix(); }}
-                    className="btn-primary text-xs py-1 px-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isInvalidLine || hasActiveFix}
-                    title={hasActiveFix ? "Another fix is active. Please commit or revert it first." : ""}
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onCommitFix(); }}
+                  className="btn-primary text-xs py-1 px-3 disabled:opacity-50"
+                  disabled={isCommitting}
                 >
-                    Preview & Apply Fix
+                  {isCommitting ? 'Creating PR...' : 'Push Fix & Create PR'}
                 </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onRevertFix(); }}
+                  className="bg-gray-200 dark:bg-white/10 text-dark-text dark:text-white font-semibold text-xs py-1 px-3 rounded-md transition-colors hover:bg-gray-300 dark:hover:bg-white/20 disabled:opacity-50"
+                  disabled={isCommitting}
+                >
+                  Revert
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); onApplyFix(); }}
+                className="btn-primary text-xs py-1 px-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isInvalidLine || hasActiveFix}
+                title={hasActiveFix ? "Another fix is active. Please commit or revert it first." : ""}
+              >
+                Preview & Apply Fix
+              </button>
             )}
           </div>
         </div>
@@ -124,20 +124,20 @@ const RightPanel: React.FC<RightPanelProps> = ({ issues, isLoading, selectedIssu
     if (isApiKeyMissing) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <ErrorIcon className="w-12 h-12 text-yellow-500 mb-4" />
-            <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading">Gemini API Key Required</h3>
-            <p className="mt-2 text-medium-dark-text dark:text-medium-text max-w-sm">
-                Please set your API key in the AI Agent Settings to enable code analysis.
-            </p>
-            {onNavigateToSettings && (
-                <button
-                    onClick={onNavigateToSettings}
-                    className="mt-6 flex items-center justify-center btn-primary"
-                >
-                    <SettingsIcon className="w-5 h-5 mr-2" />
-                    Go to Settings
-                </button>
-            )}
+          <ErrorIcon className="w-12 h-12 text-yellow-500 mb-4" />
+          <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading">Gemini API Key Required</h3>
+          <p className="mt-2 text-medium-dark-text dark:text-medium-text max-w-sm">
+            Please set your API key in the AI Agent Settings to enable code analysis.
+          </p>
+          {onNavigateToSettings && (
+            <button
+              onClick={onNavigateToSettings}
+              className="mt-6 flex items-center justify-center btn-primary"
+            >
+              <SettingsIcon className="w-5 h-5 mr-2" />
+              Go to Settings
+            </button>
+          )}
         </div>
       );
     }
@@ -151,40 +151,40 @@ const RightPanel: React.FC<RightPanelProps> = ({ issues, isLoading, selectedIssu
         'Compiling security report...'
       ]} />;
     }
-    
+
     if (issues.length === 0) {
       return <div className="flex items-center justify-center h-full text-medium-dark-text dark:text-medium-text"><p>No issues found. Clean code!</p></div>;
     }
-    
+
     return (
-        <>
-            <div className="p-4 border-b border-gray-200 dark:border-white/10">
-                <h3 className="text-lg font-bold text-dark-text dark:text-light-text font-heading mb-3">Sentinel Review</h3>
-                <div className="flex flex-wrap gap-2">
-                    {severities.map(s => issueCounts[s] > 0 && <SeverityBadge key={s} severity={s} count={issueCounts[s]} />)}
-                </div>
-            </div>
-            <div className="flex-grow p-4 space-y-3 overflow-y-auto">
-                {issues.sort((a, b) => severities.indexOf(a.severity) - severities.indexOf(b.severity)).map((issue, index) => {
-                    const issueId = `${issue.filePath}-${issue.line}-${issue.title}`;
-                    const appliedIssueId = appliedIssue ? `${appliedIssue.filePath}-${appliedIssue.line}-${appliedIssue.title}` : null;
-                    return (
-                        <IssueCard 
-                            key={`${issue.line}-${index}-${issue.title}`} 
-                            issue={issue}
-                            isSelected={selectedIssue === issue}
-                            onSelect={() => setSelectedIssue(selectedIssue === issue ? null : issue)}
-                            onApplyFix={() => onApplyFix(issue)}
-                            isFixApplied={!!appliedIssue && appliedIssueId === issueId}
-                            onCommitFix={onCommitFix}
-                            onRevertFix={onRevertFix}
-                            isCommitting={isCommitting}
-                            hasActiveFix={!!appliedIssue}
-                        />
-                    );
-                })}
-            </div>
-        </>
+      <>
+        <div className="p-4 border-b border-gray-200 dark:border-white/10">
+          <h3 className="text-lg font-bold text-dark-text dark:text-light-text font-heading mb-3">Sentinel Review</h3>
+          <div className="flex flex-wrap gap-2">
+            {severities.map(s => issueCounts[s] > 0 && <SeverityBadge key={s} severity={s} count={issueCounts[s]} />)}
+          </div>
+        </div>
+        <div className="flex-grow p-4 space-y-3 overflow-y-auto">
+          {issues.sort((a, b) => severities.indexOf(a.severity) - severities.indexOf(b.severity)).map((issue, index) => {
+            const issueId = `${issue.filePath}-${issue.line}-${issue.title}`;
+            const appliedIssueId = appliedIssue ? `${appliedIssue.filePath}-${appliedIssue.line}-${appliedIssue.title}` : null;
+            return (
+              <IssueCard
+                key={`${issue.line}-${index}-${issue.title}`}
+                issue={issue}
+                isSelected={selectedIssue === issue}
+                onSelect={() => setSelectedIssue(selectedIssue === issue ? null : issue)}
+                onApplyFix={() => onApplyFix(issue)}
+                isFixApplied={!!appliedIssue && appliedIssueId === issueId}
+                onCommitFix={onCommitFix}
+                onRevertFix={onRevertFix}
+                isCommitting={isCommitting}
+                hasActiveFix={!!appliedIssue}
+              />
+            );
+          })}
+        </div>
+      </>
     );
   };
 

@@ -15,7 +15,7 @@ const InteractiveDemo: React.FC = () => {
     const handleScan = () => {
         setIsScanning(true);
         setResults([]);
-        
+
         mockResults.forEach((result, index) => {
             setTimeout(() => {
                 setResults(prev => [...prev, result]);
@@ -64,7 +64,7 @@ const InteractiveDemo: React.FC = () => {
                     </button>
                     <div className="space-y-3">
                         {results.map((res, i) => (
-                             <motion.div
+                            <motion.div
                                 key={i}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
