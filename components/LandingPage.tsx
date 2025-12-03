@@ -44,14 +44,14 @@ const HeroSection: React.FC<{ onNavigate: (view: DashboardView) => void }> = ({ 
         <div className="absolute inset-0 bg-gradient-to-t from-light-primary dark:from-dark-primary via-light-primary/50 dark:via-dark-primary/50 to-transparent"></div>
         <div className="relative z-10 max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-dark-text dark:text-white font-heading uppercase tracking-wider animate-fade-in-up">
-               Your Digital <span className="gradient-text">Fortress</span>
+                Your Digital <span className="gradient-text">Fortress</span>
             </h1>
             <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-medium-dark-text dark:text-medium-text animate-fade-in-up" style={{ animationDelay: '200ms', lineHeight: 1.7 }}>
                 Sentinel transforms your codebase with AI-driven security, identifying complex vulnerabilities before they ever reach production.
             </p>
             <div className="mt-10 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                 <button 
-                    onClick={() => onNavigate('repositories')} 
+                <button
+                    onClick={() => onNavigate('repositories')}
                     className="btn-primary py-4 px-10 text-xl"
                 >
                     Explore The Dashboard
@@ -103,7 +103,7 @@ const FinalCTASection: React.FC<{ onNavigate: (view: DashboardView) => void }> =
                 <div className="relative h-14 w-full scroll-animate marquee-container" style={{ transitionDelay: '300ms' }}>
                     <motion.div className="flex" variants={marqueeVariants} animate="animate">
                         {[...liveFeedItems, ...liveFeedItems].map((item, index) => (
-                             <div key={index} className="flex items-center space-x-3 bg-light-secondary dark:bg-dark-secondary rounded-full py-2 px-4 mx-2 flex-shrink-0">
+                            <div key={index} className="flex items-center space-x-3 bg-light-secondary dark:bg-dark-secondary rounded-full py-2 px-4 mx-2 flex-shrink-0">
                                 <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${getPillColor(item.type)}`}>{item.type}</span>
                                 <span className="text-sm font-mono text-medium-dark-text dark:text-medium-text">{item.text}</span>
                             </div>
@@ -121,58 +121,58 @@ const FinalCTASection: React.FC<{ onNavigate: (view: DashboardView) => void }> =
 }
 
 const LandingPage: React.FC<{ onNavigate: (view: AppView | DashboardView) => void }> = ({ onNavigate }) => {
-  const footerRef = useAnimateOnScroll();
-  return (
-    <>
-      <main className="overflow-x-hidden font-sans bg-light-primary dark:bg-dark-primary">
-        <HeroSection onNavigate={onNavigate} />
-        
-        <section id="features" className="py-24 bg-light-primary dark:bg-dark-primary">
-            <div className="max-w-7xl mx-auto px-6 text-center">
-                <h2 className="text-4xl md:text-5xl font-bold text-dark-text dark:text-white font-heading mb-4 scroll-animate">
-                    Security, Supercharged.
-                </h2>
-                <p className="max-w-3xl mx-auto text-lg text-medium-dark-text dark:text-medium-text mb-20 scroll-animate" style={{ transitionDelay: '150ms' }}>
-                    Sentinel integrates seamlessly into your workflow, providing a suite of powerful tools to automate and elevate your code security practices.
-                </p>
-                <AnimatedFeatureShowcase />
-            </div>
-        </section>
+    const footerRef = useAnimateOnScroll();
+    return (
+        <>
+            <main className="overflow-x-hidden font-sans bg-light-primary dark:bg-dark-primary">
+                <HeroSection onNavigate={onNavigate} />
 
-        <section id="why-sentinel" className="py-24 bg-light-secondary dark:bg-dark-secondary">
-            <InteractiveDemo />
-        </section>
-        
-        <CodeSurgeryAnimation />
+                <section id="features" className="py-24 bg-light-primary dark:bg-dark-primary">
+                    <div className="max-w-7xl mx-auto px-6 text-center">
+                        <h2 className="text-4xl md:text-5xl font-bold text-dark-text dark:text-white font-heading mb-4 scroll-animate">
+                            Security, Supercharged.
+                        </h2>
+                        <p className="max-w-3xl mx-auto text-lg text-medium-dark-text dark:text-medium-text mb-20 scroll-animate" style={{ transitionDelay: '150ms' }}>
+                            Sentinel integrates seamlessly into your workflow, providing a suite of powerful tools to automate and elevate your code security practices.
+                        </p>
+                        <AnimatedFeatureShowcase />
+                    </div>
+                </section>
 
-        <FinalCTASection onNavigate={onNavigate} />
-      </main>
-       <footer ref={footerRef} className="bg-light-secondary dark:bg-dark-secondary text-medium-dark-text dark:text-medium-text border-t border-gray-200 dark:border-white/10">
-            <div className="max-w-7xl mx-auto px-6 py-12">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div className="text-center md:text-left scroll-animate">
-                        <div className="flex items-center justify-center md:justify-start space-x-3">
-                            <SentinelLogoIcon className="w-8 h-auto text-dark-text dark:text-white"/>
-                            <span className="font-bold text-xl font-heading text-dark-text dark:text-white">Sentinel AI</span>
+                <section id="why-sentinel" className="py-24 bg-light-secondary dark:bg-dark-secondary">
+                    <InteractiveDemo />
+                </section>
+
+                <CodeSurgeryAnimation />
+
+                <FinalCTASection onNavigate={onNavigate} />
+            </main>
+            <footer ref={footerRef} className="bg-light-secondary dark:bg-dark-secondary text-medium-dark-text dark:text-medium-text border-t border-gray-200 dark:border-white/10">
+                <div className="max-w-7xl mx-auto px-6 py-12">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="text-center md:text-left scroll-animate">
+                            <div className="flex items-center justify-center md:justify-start space-x-3">
+                                <SentinelLogoIcon className="w-8 h-auto text-dark-text dark:text-white" />
+                                <span className="font-bold text-xl font-heading text-dark-text dark:text-white">Sentinel AI</span>
+                            </div>
+                            <p className="mt-4 text-sm max-w-xs mx-auto md:mx-0">The code-aware AI security agent for modern development teams.</p>
+                            <div className="mt-4 flex items-center justify-center md:justify-start space-x-4">
+                                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-cyan transition-colors"><GithubIcon className="w-5 h-5" /></a>
+                            </div>
                         </div>
-                        <p className="mt-4 text-sm max-w-xs mx-auto md:mx-0">The code-aware AI security agent for modern development teams.</p>
-                         <div className="mt-4 flex items-center justify-center md:justify-start space-x-4">
-                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-cyan transition-colors"><GithubIcon className="w-5 h-5" /></a>
-                         </div>
+                        <div className="flex items-center space-x-8 scroll-animate" style={{ transitionDelay: '150ms' }}>
+                            <a href="#features" className="hover:text-brand-cyan transition-colors text-sm font-medium">Features</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('pricing'); }} className="hover:text-brand-cyan transition-colors text-sm font-medium">Pricing</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('dashboard'); }} className="hover:text-brand-cyan transition-colors text-sm font-medium">Dashboard</a>
+                        </div>
                     </div>
-                    <div className="flex items-center space-x-8 scroll-animate" style={{ transitionDelay: '150ms' }}>
-                        <a href="#features" className="hover:text-brand-cyan transition-colors text-sm font-medium">Features</a>
-                        <a href="#" onClick={(e)=>{ e.preventDefault(); onNavigate('pricing'); }} className="hover:text-brand-cyan transition-colors text-sm font-medium">Pricing</a>
-                        <a href="#" onClick={(e)=>{ e.preventDefault(); onNavigate('dashboard'); }} className="hover:text-brand-cyan transition-colors text-sm font-medium">Dashboard</a>
+                    <div className="mt-12 pt-8 border-t border-gray-200 dark:border-white/10 text-center text-xs">
+                        <p>&copy; {new Date().getFullYear()} Sentinel AI. All rights reserved.</p>
                     </div>
                 </div>
-                 <div className="mt-12 pt-8 border-t border-gray-200 dark:border-white/10 text-center text-xs">
-                    <p>&copy; {new Date().getFullYear()} Sentinel AI. All rights reserved.</p>
-                </div>
-            </div>
-      </footer>
-    </>
-  );
+            </footer>
+        </>
+    );
 };
 
 export default LandingPage;

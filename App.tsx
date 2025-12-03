@@ -12,8 +12,8 @@ import GlobalSearchModal from './components/GlobalSearchModal';
 import { getCurrentUser, logout, updateUser } from './services/authService';
 
 type NavigateOptions = {
-    repoFullName?: string;
-    initialMode?: 'login' | 'signup';
+  repoFullName?: string;
+  initialMode?: 'login' | 'signup';
 };
 
 const AppContent: React.FC = () => {
@@ -27,17 +27,17 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const loggedInUser = getCurrentUser();
     if (loggedInUser) {
-        setUser(loggedInUser);
-        setView('dashboard'); 
+      setUser(loggedInUser);
+      setView('dashboard');
     }
   }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-            e.preventDefault();
-            setIsSearchOpen(isOpen => !isOpen);
-        }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(isOpen => !isOpen);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -45,68 +45,68 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-        const savedReposJson = localStorage.getItem(`sentinel-repos-${user.email}`);
-        if (savedReposJson) {
-            try {
-                const savedRepos: Repository[] = JSON.parse(savedReposJson);
-                const normalizedRepos = savedRepos.map(repo => ({
-                    ...repo,
-                    autoReview: repo.autoReview === true,
-                }));
-                setRepos(normalizedRepos);
-            } catch (error) {
-                console.error("Failed to parse repos from local storage:", error);
-                setRepos([]);
-            }
+      const savedReposJson = localStorage.getItem(`sentinel-repos-${user.email}`);
+      if (savedReposJson) {
+        try {
+          const savedRepos: Repository[] = JSON.parse(savedReposJson);
+          const normalizedRepos = savedRepos.map(repo => ({
+            ...repo,
+            autoReview: repo.autoReview === true,
+          }));
+          setRepos(normalizedRepos);
+        } catch (error) {
+          console.error("Failed to parse repos from local storage:", error);
+          setRepos([]);
         }
+      }
     } else {
-        setRepos([]); 
+      setRepos([]);
     }
   }, [user]);
 
   useEffect(() => {
     if (user) {
-        localStorage.setItem(`sentinel-repos-${user.email}`, JSON.stringify(repos));
+      localStorage.setItem(`sentinel-repos-${user.email}`, JSON.stringify(repos));
     }
   }, [repos, user]);
-  
+
   const handleNavigate = (targetView: AppView | DashboardView, options: NavigateOptions = {}) => {
     window.scrollTo(0, 0);
-    
+
     const dashboardViews: DashboardView[] = [
-        'developerCommandCenter', 'smartAlerts', 'repositories', 
-        'studio', 'gitops', 'commits', 'settings', 'docs', 'pushpull', 'refactor', 
-        'repoReport', 'workflowStreamliner', 'imageGenerator', 'readmeGenerator'
+      'developerCommandCenter', 'smartAlerts', 'repositories',
+      'studio', 'gitops', 'commits', 'settings', 'docs', 'pushpull', 'refactor',
+      'repoReport', 'workflowStreamliner', 'imageGenerator', 'readmeGenerator'
     ];
-    
+
     if (targetView === 'auth') {
-        setAuthInitialMode(options.initialMode || 'login');
-        setView('auth');
+      setAuthInitialMode(options.initialMode || 'login');
+      setView('auth');
     } else if (dashboardViews.includes(targetView as DashboardView)) {
-        if (user) {
-            setView('dashboard');
-            setDashboardView(targetView as DashboardView);
-        } else {
-            setAuthInitialMode('login'); 
-            setView('auth'); 
-        }
+      if (user) {
+        setView('dashboard');
+        setDashboardView(targetView as DashboardView);
+      } else {
+        setAuthInitialMode('login');
+        setView('auth');
+      }
     } else {
-        setView(targetView as AppView);
+      setView(targetView as AppView);
     }
   }
 
   const handleProfileUpdate = (updatedProfile: Partial<User>) => {
-      setUser(currentUser => {
-          if (!currentUser) return null;
-          const newUser = { ...currentUser, ...updatedProfile };
-          if (updatedProfile.github && updatedProfile.github.avatar_url) {
-              newUser.avatarUrl = updatedProfile.github.avatar_url;
-          }
-          updateUser(newUser);
-          return newUser;
-      });
+    setUser(currentUser => {
+      if (!currentUser) return null;
+      const newUser = { ...currentUser, ...updatedProfile };
+      if (updatedProfile.github && updatedProfile.github.avatar_url) {
+        newUser.avatarUrl = updatedProfile.github.avatar_url;
+      }
+      updateUser(newUser);
+      return newUser;
+    });
   }
-  
+
   const handleSignOut = () => {
     logout();
     setUser(null);
@@ -114,53 +114,53 @@ const AppContent: React.FC = () => {
   };
 
   const handleAuthSuccess = (authenticatedUser: User) => {
-      setUser(authenticatedUser);
-      setView('dashboard');
-      setDashboardView('developerCommandCenter');
+    setUser(authenticatedUser);
+    setView('dashboard');
+    setDashboardView('developerCommandCenter');
   };
 
   const renderView = () => {
-    switch(view) {
-        case 'landing':
-            return <LandingPage onNavigate={handleNavigate} />;
-        case 'pricing':
-            return <PricingPage onNavigate={handleNavigate} />;
-        case 'auth':
-            return <AuthPage onAuthSuccess={handleAuthSuccess} onNavigate={setView} initialMode={authInitialMode} />;
-        case 'dashboard':
-            if (!user) { 
-                return <AuthPage onAuthSuccess={handleAuthSuccess} onNavigate={setView} initialMode="login" />;
-            }
-            return (
-              <div className="space-y-6">
-                <Dashboard 
-                  user={user} 
-                  activeView={dashboardView} 
-                  setActiveView={setDashboardView} 
-                  onProfileUpdate={handleProfileUpdate} 
-                  repos={repos} 
-                  setRepos={setRepos} 
-                />
-              </div>
-            );
-        default:
-            return <LandingPage onNavigate={handleNavigate} />;
+    switch (view) {
+      case 'landing':
+        return <LandingPage onNavigate={handleNavigate} />;
+      case 'pricing':
+        return <PricingPage onNavigate={handleNavigate} />;
+      case 'auth':
+        return <AuthPage onAuthSuccess={handleAuthSuccess} onNavigate={setView} initialMode={authInitialMode} />;
+      case 'dashboard':
+        if (!user) {
+          return <AuthPage onAuthSuccess={handleAuthSuccess} onNavigate={setView} initialMode="login" />;
+        }
+        return (
+          <div className="space-y-6">
+            <Dashboard
+              user={user}
+              activeView={dashboardView}
+              setActiveView={setDashboardView}
+              onProfileUpdate={handleProfileUpdate}
+              repos={repos}
+              setRepos={setRepos}
+            />
+          </div>
+        );
+      default:
+        return <LandingPage onNavigate={handleNavigate} />;
     }
   }
-  
+
   const repoCount = repos.length;
   const autoReviewCount = repos.filter(r => r.autoReview).length;
 
   return (
     <div className="min-h-screen text-dark-text dark:text-light-text font-sans bg-light-primary dark:bg-dark-primary">
-      <Header 
-          currentView={view} 
-          user={user}
-          onNavigate={handleNavigate}
-          repoCount={repoCount}
-          autoReviewCount={autoReviewCount}
-          onSignOut={handleSignOut}
-          onToggleSearch={() => setIsSearchOpen(true)}
+      <Header
+        currentView={view}
+        user={user}
+        onNavigate={handleNavigate}
+        repoCount={repoCount}
+        autoReviewCount={autoReviewCount}
+        onSignOut={handleSignOut}
+        onToggleSearch={() => setIsSearchOpen(true)}
       />
       {user && <GlobalSearchModal
         isOpen={isSearchOpen}
