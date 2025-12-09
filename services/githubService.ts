@@ -25,7 +25,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3, in
         console.log(`Rate limiting GitHub API: delaying next call by ${delay}ms.`);
         await sleep(delay);
     }
-    
+
     lastApiCallTimestamp = Date.now();
 
     for (let attempt = 0; attempt < retries; attempt++) {
@@ -37,10 +37,10 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3, in
                 const delay = baseDelay + jitter;
                 console.warn(`GitHub API request to ${url} failed with status ${response.status}. Retrying in ${delay}ms...`);
                 await sleep(delay);
-                continue; 
+                continue;
             }
-            return response; 
-        } catch (error) { 
+            return response;
+        } catch (error) {
             if (attempt < retries - 1) {
                 const baseDelay = initialDelay * Math.pow(2, attempt);
                 const jitter = Math.floor(Math.random() * 500);
@@ -79,7 +79,7 @@ const getOctokit = () => {
 const handleApiError = async (response: Response, url: string, context: string): Promise<never> => {
     const errorBody = await response.text();
     console.error(`GitHub API Error (${context}): Status: ${response.status}. URL: ${url}. Body: ${errorBody}`);
-    
+
     if (response.status === 401) {
         window.dispatchEvent(new CustomEvent('auth-error'));
         throw new GitHubApiError("Authentication failed (401). Your token is invalid, expired, or lacks the required 'repo', 'read:user', and 'security_events' scopes.", 401);
@@ -90,14 +90,14 @@ const handleApiError = async (response: Response, url: string, context: string):
     if (response.status === 404) {
         throw new GitHubApiError("Resource not found (404). Please check the repository URL.", 404);
     }
-    
+
     try {
-      const errorJson = JSON.parse(errorBody);
-      if (errorJson.message) {
-        throw new GitHubApiError(errorJson.message, response.status);
-      }
-    } catch (e) {}
-    
+        const errorJson = JSON.parse(errorBody);
+        if (errorJson.message) {
+            throw new GitHubApiError(errorJson.message, response.status);
+        }
+    } catch (e) { }
+
     throw new GitHubApiError(`An unexpected error occurred during ${context}. Status: ${response.status}`, response.status);
 };
 
@@ -116,21 +116,21 @@ export const getAuthenticatedUserProfile = async (): Promise<GitHubProfile> => {
 }
 
 export const parseGitHubUrl = (url: string): { owner: string; repo: string, pull?: string } | null => {
-  try {
-    const urlObj = new URL(url);
-    if (urlObj.hostname !== 'github.com') return null;
-    const pathParts = urlObj.pathname.split('/').filter(Boolean);
-    if (pathParts.length < 2) return null;
-    const pullMatch = urlObj.pathname.match(/\/pull\/(\d+)/);
-    return { 
-        owner: pathParts[0], 
-        repo: pathParts[1].replace('.git', ''),
-        pull: pullMatch ? pullMatch[1] : undefined,
-    };
-  } catch (error) {
-    console.error("Invalid URL:", error);
-    return null;
-  }
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname !== 'github.com') return null;
+        const pathParts = urlObj.pathname.split('/').filter(Boolean);
+        if (pathParts.length < 2) return null;
+        const pullMatch = urlObj.pathname.match(/\/pull\/(\d+)/);
+        return {
+            owner: pathParts[0],
+            repo: pathParts[1].replace('.git', ''),
+            pull: pullMatch ? pullMatch[1] : undefined,
+        };
+    } catch (error) {
+        console.error("Invalid URL:", error);
+        return null;
+    }
 };
 
 export const getRepoFileTree = async (owner: string, repo: string): Promise<GitHubTreeItem[]> => {
@@ -148,7 +148,7 @@ export const getRepoFileTree = async (owner: string, repo: string): Promise<GitH
     if (!repoInfoResponse.ok) {
         return handleApiError(repoInfoResponse, repoInfoUrl, 'fetching repo info');
     }
-    
+
     const repoData = await repoInfoResponse.json();
     const defaultBranch = repoData.default_branch;
 
@@ -156,7 +156,7 @@ export const getRepoFileTree = async (owner: string, repo: string): Promise<GitH
     const response = await fetchWithRetry(treeUrl, {
         headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
         return handleApiError(response, treeUrl, 'fetching file tree');
     }
@@ -164,10 +164,10 @@ export const getRepoFileTree = async (owner: string, repo: string): Promise<GitH
     const data = await response.json();
     const scannableFiles = data.tree.filter((item: GitHubTreeItem) =>
         item.type === 'blob' &&
-        item.size && item.size < 100000 && 
+        item.size && item.size < 100000 &&
         /\.(py|ts|tsx|js|jsx|tf|hcl|json|lock|md|txt|cfg|ini|toml|yaml|yml)$/i.test(item.path)
     );
-    
+
     setCache(cacheKey, scannableFiles, 60 * 60 * 1000); // 1-hour TTL
     return scannableFiles;
 };
@@ -178,7 +178,7 @@ export const getFileContent = async (owner: string, repo: string, path: string):
     const response = await fetchWithRetry(url, {
         headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
         return handleApiError(response, url, `fetching file content for ${path}`);
     }
@@ -201,8 +201,8 @@ export const getRepoCommits = async (owner: string, repo: string, per_page: numb
 
 export const getCommitDiff = async (owner: string, repo: string, sha: string): Promise<string> => {
     const url = `${GITHUB_API_URL}/repos/${owner}/${repo}/commits/${sha}`;
-    const response = await fetchWithRetry(url, { 
-        headers: { ...getHeaders(), 'Accept': 'application/vnd.github.v3.diff' } 
+    const response = await fetchWithRetry(url, {
+        headers: { ...getHeaders(), 'Accept': 'application/vnd.github.v3.diff' }
     });
     if (!response.ok) {
         return handleApiError(response, url, 'fetching commit diff');
@@ -224,7 +224,7 @@ export const getUserRepos = async (page: number = 1): Promise<Repository[]> => {
 export const getRepoPulls = async (owner: string, repo: string, state: 'open' | 'closed' | 'all' = 'open'): Promise<any[]> => {
     const url = `${GITHUB_API_URL}/repos/${owner}/${repo}/pulls?state=${state}&per_page=100`;
     const response = await fetchWithRetry(url, { headers: getHeaders() });
-     if (!response.ok) {
+    if (!response.ok) {
         return handleApiError(response, url, 'fetching pull requests');
     }
     return response.json();
@@ -343,7 +343,7 @@ export const getDependabotAlerts = async (owner: string, repo: string): Promise<
     const response = await fetchWithRetry(url, { headers: getHeaders() });
     if (!response.ok) {
         if (response.status === 403) {
-             throw new GitHubApiError("Dependabot alerts are not enabled for this repository, or your token is missing the 'security_events' scope.", 403);
+            throw new GitHubApiError("Dependabot alerts are not enabled for this repository, or your token is missing the 'security_events' scope.", 403);
         }
         return handleApiError(response, url, 'fetching dependabot alerts');
     }
@@ -443,7 +443,7 @@ export const getRepoContextForReadme = async (repoFullName: string): Promise<Rea
             console.warn("Could not parse package.json for README context.");
         }
     }
-    
+
     const mainLanguage = languages.data ? Object.keys(languages.data)[0] : null;
 
     const topContributors = contributors.data
@@ -481,11 +481,11 @@ export const getMonitoredReposHealth = async (repos: Repository[]): Promise<Repo
         try {
             const parsed = parseGitHubUrl(`https://github.com/${repo.full_name}`);
             if (!parsed) throw new Error(`Invalid repo name: ${repo.full_name}`);
-            
+
             const alerts = await getDependabotAlerts(parsed.owner, parsed.repo);
             const critical = alerts.filter(a => a.security_advisory.severity === 'critical').length;
             const high = alerts.filter(a => a.security_advisory.severity === 'high').length;
-            
+
             return {
                 fullName: repo.full_name,
                 critical,
