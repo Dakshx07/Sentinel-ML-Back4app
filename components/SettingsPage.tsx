@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { DEFAULT_SYSTEM_INSTRUCTION, MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY } from '../services/geminiService';
 import { getAuthenticatedUserProfile } from '../services/githubService';
 import { User } from '../types';
-import { GithubIcon } from './icons';
+import { GithubIcon, CheckCircleIcon } from './icons';
 import { useToast } from './ToastContext';
+import { motion } from 'framer-motion';
 
 const API_KEY_LOCAL_STORAGE_KEY = 'sentinel-api-key';
 const SYSTEM_INSTRUCTION_LOCAL_STORAGE_KEY = 'sentinel-system-instruction';
 const GITHUB_PAT_LOCAL_STORAGE_KEY = 'sentinel-github-pat';
-
 
 type SaveState = 'idle' | 'saving' | 'saved';
 
@@ -16,6 +16,46 @@ interface SettingsPageProps {
     user: User | null;
     onProfileUpdate: (updatedUser: Partial<User>) => void;
 }
+
+// Section wrapper component
+const SettingsSection: React.FC<{ title: string; description?: string; children: React.ReactNode; delay?: number }> =
+    ({ title, description, children, delay = 0 }) => (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay }}
+            className="bg-[#0A0A0A] rounded-2xl border border-white/5 p-6"
+        >
+            <h2 className="text-lg font-semibold text-white mb-1">{title}</h2>
+            {description && <p className="text-sm text-gray-500 mb-5">{description}</p>}
+            {!description && <div className="mb-5" />}
+            {children}
+        </motion.div>
+    );
+
+// Input component
+const SettingsInput: React.FC<{
+    id: string;
+    label: string;
+    type?: string;
+    value: string;
+    onChange: (v: string) => void;
+    placeholder?: string;
+    hint?: React.ReactNode;
+}> = ({ id, label, type = 'text', value, onChange, placeholder, hint }) => (
+    <div className="space-y-2">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-400">{label}</label>
+        {hint && <p className="text-xs text-gray-600">{hint}</p>}
+        <input
+            id={id}
+            type={type}
+            className="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all font-mono"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+        />
+    </div>
+);
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) => {
     const { addToast } = useToast();
@@ -35,9 +75,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
         setApiKey(localStorage.getItem(API_KEY_LOCAL_STORAGE_KEY) || '');
         setGithubPat(localStorage.getItem(GITHUB_PAT_LOCAL_STORAGE_KEY) || '');
         setMaxOutputTokens(localStorage.getItem(MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY) || '');
-        if (user) {
-            setUsername(user.username);
-        }
+        if (user) setUsername(user.username);
     }, [user]);
 
     const createSaveEffect = (saveState: SaveState, setSaveState: React.Dispatch<React.SetStateAction<SaveState>>) => {
@@ -53,19 +91,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
     useEffect(() => createSaveEffect(githubPatSaveState, setGithubPatSaveState), [githubPatSaveState]);
     useEffect(() => createSaveEffect(maxOutputTokensSaveState, setMaxOutputTokensSaveState), [maxOutputTokensSaveState]);
 
-
-    const handleSave = (
-        value: string,
-        key: string,
-        setSaveState: React.Dispatch<React.SetStateAction<SaveState>>,
-        callback?: (value: any) => void
-    ) => {
+    const handleSave = (value: string, key: string, setSaveState: React.Dispatch<React.SetStateAction<SaveState>>, callback?: (value: any) => void) => {
         setSaveState('saving');
-        if (callback) {
-            callback(value);
-        } else {
-            localStorage.setItem(key, value);
-        }
+        if (callback) callback(value);
+        else localStorage.setItem(key, value);
         setTimeout(() => setSaveState('saved'), 500);
     };
 
@@ -91,130 +120,147 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onProfileUpdate }) =>
         }
     };
 
-    const SaveButton: React.FC<{ state: SaveState, label: string, onSave: () => void, className?: string }> = ({ state, label, onSave, className }) => (
-        <button onClick={onSave} disabled={state !== 'idle'} className={`btn-primary text-center transition-all ${className}`}>
+    const SaveButton: React.FC<{ state: SaveState; label: string; onSave: () => void }> = ({ state, label, onSave }) => (
+        <motion.button
+            onClick={onSave}
+            disabled={state !== 'idle'}
+            whileHover={{ scale: state === 'idle' ? 1.02 : 1 }}
+            whileTap={{ scale: state === 'idle' ? 0.98 : 1 }}
+            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${state === 'saved'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : state === 'saving'
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                        : 'bg-gradient-to-r from-blue-500 to-violet-500 text-white hover:shadow-lg hover:shadow-blue-500/20'
+                }`}
+        >
             {state === 'idle' && label}
             {state === 'saving' && 'Saving...'}
-            {state === 'saved' && 'Saved!'}
-        </button>
+            {state === 'saved' && (
+                <span className="flex items-center space-x-1.5">
+                    <CheckCircleIcon className="w-4 h-4" />
+                    <span>Saved!</span>
+                </span>
+            )}
+        </motion.button>
     );
 
     return (
         <div className="h-full w-full">
-            <div className="bg-light-secondary dark:bg-dark-secondary rounded-lg border border-gray-200 dark:border-white/10 p-6 md:p-8 max-w-4xl mx-auto space-y-12">
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mb-6"
+            >
+                <h1 className="text-2xl font-bold text-white">Settings</h1>
+                <p className="text-gray-500 text-sm mt-1">Configure your account and integrations</p>
+            </motion.div>
 
+            <div className="max-w-3xl space-y-6">
+                {/* Profile */}
                 {user && (
-                    <div>
-                        <h2 className="text-3xl font-bold text-dark-text dark:text-white font-heading mb-4">Profile Settings</h2>
+                    <SettingsSection title="Profile" description="Manage your account details" delay={0.1}>
                         <div className="space-y-4">
-                            <div>
-                                <label htmlFor="username" className="block text-sm font-medium text-medium-dark-text dark:text-medium-text mb-2">Username</label>
-                                <input id="username" type="text"
-                                    className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-3 text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
-                                    value={username}
-                                    onChange={(e) => { setUsername(e.target.value); setUsernameSaveState('idle'); }}
-                                />
-                            </div>
-                            <div className="flex items-center justify-end">
-                                <SaveButton state={usernameSaveState} label="Save Username" onSave={() => handleSave(username, '', setUsernameSaveState, () => onProfileUpdate({ username }))} className="w-36" />
+                            <SettingsInput id="username" label="Username" value={username} onChange={(v) => { setUsername(v); setUsernameSaveState('idle'); }} />
+                            <div className="flex justify-end">
+                                <SaveButton state={usernameSaveState} label="Save Username" onSave={() => handleSave(username, '', setUsernameSaveState, () => onProfileUpdate({ username }))} />
                             </div>
                         </div>
-                    </div>
+                    </SettingsSection>
                 )}
 
-                <div>
-                    <h2 className="text-3xl font-bold text-dark-text dark:text-white font-heading mb-4">Integrations</h2>
-                    <div className="glass-effect p-6 rounded-lg">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-4">
-                                <GithubIcon className="w-8 h-8 text-dark-text dark:text-white" />
-                                <div>
-                                    <h3 className="font-bold text-lg text-dark-text dark:text-light-text">GitHub</h3>
-                                    <p className="text-sm text-medium-dark-text dark:text-medium-text">
-                                        {user?.github ? `Connected as @${user.github.login}` : 'Not Connected'}
-                                    </p>
-                                </div>
+                {/* GitHub Integration */}
+                <SettingsSection title="GitHub Integration" description="Connect your GitHub account for repository access" delay={0.2}>
+                    <div className="flex items-center justify-between mb-6 p-4 bg-white/[0.02] rounded-xl border border-white/5">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-3 bg-white/5 rounded-xl">
+                                <GithubIcon className="w-6 h-6 text-white" />
                             </div>
-                            {user?.github ? (
-                                <span className="text-sm font-semibold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/50 px-3 py-1 rounded-full">Connected</span>
-                            ) : (
-                                <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/50 px-3 py-1 rounded-full">Not Connected</span>
-                            )}
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-white/20">
-                            <h4 className="font-semibold text-dark-text dark:text-light-text">GitHub Personal Access Token (Required)</h4>
-                            <p className="text-sm text-medium-dark-text dark:text-medium-text mt-2">
-                                Provide a <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:underline">Classic personal access token</a> with the full <code className="bg-gray-200 dark:bg-black/30 px-1.5 py-0.5 rounded-md font-mono text-xs">'repo'</code> and <code className="bg-gray-200 dark:bg-black/30 px-1.5 py-0.5 rounded-md font-mono text-xs">'security_events'</code> scopes. Fine-grained tokens are not recommended.
-                            </p>
-                            <div className="mt-4">
-                                <input type="password"
-                                    className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-3 font-mono text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
-                                    value={githubPat}
-                                    onChange={(e) => { setGithubPat(e.target.value); setGithubPatSaveState('idle'); }}
-                                    placeholder="ghp_..."
-                                />
-                            </div>
-                            <div className="mt-4 flex items-center justify-end">
-                                <SaveButton state={githubPatSaveState} label={user?.github ? "Update Token" : "Save & Connect"} onSave={handleSaveGitHubPat} className="w-40" />
+                            <div>
+                                <h3 className="font-medium text-white">GitHub</h3>
+                                <p className="text-sm text-gray-500">
+                                    {user?.github ? `@${user.github.login}` : 'Not connected'}
+                                </p>
                             </div>
                         </div>
+                        <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${user?.github
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            }`}>
+                            {user?.github ? 'Connected' : 'Not Connected'}
+                        </span>
                     </div>
-                </div>
-
-                <div>
-                    <h2 className="text-3xl font-bold text-dark-text dark:text-white font-heading mb-4">Gemini API Key</h2>
-                    <p className="text-medium-dark-text dark:text-medium-text mb-4">
-                        Your key is stored in your browser's local storage and is never sent to our servers.
-                    </p>
-                    <label htmlFor="api-key" className="block text-sm font-medium text-medium-dark-text dark:text-medium-text mb-2">Your Gemini API Key</label>
-                    <input id="api-key" type="password"
-                        className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-3 font-mono text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
-                        value={apiKey}
-                        onChange={(e) => { setApiKey(e.target.value); setApiKeySaveState('idle'); }}
-                        placeholder="Enter your Gemini API key here"
-                    />
-                    <div className="mt-4 flex items-center justify-end">
-                        <SaveButton state={apiKeySaveState} label="Save Key" onSave={() => handleSave(apiKey, API_KEY_LOCAL_STORAGE_KEY, setApiKeySaveState)} className="w-32" />
+                    <div className="space-y-4">
+                        <SettingsInput
+                            id="github-pat"
+                            label="Personal Access Token"
+                            type="password"
+                            value={githubPat}
+                            onChange={(v) => { setGithubPat(v); setGithubPatSaveState('idle'); }}
+                            placeholder="ghp_..."
+                            hint={<>Create a <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">classic token</a> with <code className="bg-white/5 px-1 py-0.5 rounded text-[10px]">repo</code> scope</>}
+                        />
+                        <div className="flex justify-end">
+                            <SaveButton state={githubPatSaveState} label={user?.github ? "Update Token" : "Connect"} onSave={handleSaveGitHubPat} />
+                        </div>
                     </div>
-                </div>
+                </SettingsSection>
 
-                <div>
-                    <h2 className="text-3xl font-bold text-dark-text dark:text-white font-heading mb-4">AI Agent Configuration</h2>
+                {/* Gemini API */}
+                <SettingsSection title="Gemini API Key" description="Your key is stored locally and never sent to our servers" delay={0.3}>
+                    <div className="space-y-4">
+                        <SettingsInput
+                            id="api-key"
+                            label="API Key"
+                            type="password"
+                            value={apiKey}
+                            onChange={(v) => { setApiKey(v); setApiKeySaveState('idle'); }}
+                            placeholder="Enter your Gemini API key"
+                        />
+                        <div className="flex justify-end">
+                            <SaveButton state={apiKeySaveState} label="Save Key" onSave={() => handleSave(apiKey, API_KEY_LOCAL_STORAGE_KEY, setApiKeySaveState)} />
+                        </div>
+                    </div>
+                </SettingsSection>
+
+                {/* AI Configuration */}
+                <SettingsSection title="AI Configuration" description="Customize the AI agent behavior" delay={0.4}>
                     <div className="space-y-6">
-                        <div>
-                            <label htmlFor="system-instruction" className="block text-sm font-medium text-medium-dark-text dark:text-medium-text mb-2">System Instruction</label>
-                            <p className="text-xs text-medium-dark-text dark:text-medium-text mb-3"> Customize the core behavior of the Sentinel AI agent. </p>
-                            <textarea id="system-instruction" rows={8}
-                                className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-3 font-mono text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-400">System Instruction</label>
+                            <textarea
+                                rows={6}
+                                className="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all font-mono resize-none"
                                 value={instruction}
                                 onChange={(e) => { setInstruction(e.target.value); setInstructionSaveState('idle'); }}
                             />
-                            <div className="mt-4 flex flex-wrap items-center justify-end gap-4">
-                                <button onClick={() => setInstruction(DEFAULT_SYSTEM_INSTRUCTION)} className="bg-gray-200 dark:bg-white/5 hover:bg-gray-300 dark:hover:bg-white/10 text-dark-text dark:text-white font-semibold py-2 px-4 rounded-md transition-colors">
-                                    Reset to Default
+                            <div className="flex justify-end gap-3 mt-4">
+                                <button
+                                    onClick={() => setInstruction(DEFAULT_SYSTEM_INSTRUCTION)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+                                >
+                                    Reset Default
                                 </button>
-                                <SaveButton state={instructionSaveState} label="Save Instruction" onSave={() => handleSave(instruction, SYSTEM_INSTRUCTION_LOCAL_STORAGE_KEY, setInstructionSaveState)} className="w-36" />
+                                <SaveButton state={instructionSaveState} label="Save" onSave={() => handleSave(instruction, SYSTEM_INSTRUCTION_LOCAL_STORAGE_KEY, setInstructionSaveState)} />
                             </div>
                         </div>
 
-                        <div className="mt-6">
-                            <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading mb-2">Model Parameters</h3>
-                            <label htmlFor="max-tokens" className="block text-sm font-medium text-medium-dark-text dark:text-medium-text mb-2"> Max Output Tokens </label>
-                            <p className="text-xs text-medium-dark-text dark:text-medium-text mb-3"> Limit the AI's response length. Lower values are faster but may be less detailed. Leave blank for no limit. </p>
-                            <input id="max-tokens" type="number"
-                                className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-3 font-mono text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                        <div className="pt-4 border-t border-white/5">
+                            <SettingsInput
+                                id="max-tokens"
+                                label="Max Output Tokens"
+                                type="number"
                                 value={maxOutputTokens}
-                                onChange={(e) => { setMaxOutputTokens(e.target.value); setMaxOutputTokensSaveState('idle'); }}
+                                onChange={(v) => { setMaxOutputTokens(v); setMaxOutputTokensSaveState('idle'); }}
                                 placeholder="e.g., 2048"
-                                min="0"
+                                hint="Limit AI response length. Leave blank for no limit."
                             />
-                            <div className="mt-4 flex items-center justify-end">
-                                <SaveButton state={maxOutputTokensSaveState} label="Save Tokens" onSave={() => handleSave(maxOutputTokens, MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY, setMaxOutputTokensSaveState)} className="w-36" />
+                            <div className="flex justify-end mt-4">
+                                <SaveButton state={maxOutputTokensSaveState} label="Save" onSave={() => handleSave(maxOutputTokens, MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY, setMaxOutputTokensSaveState)} />
                             </div>
                         </div>
                     </div>
-                </div>
+                </SettingsSection>
             </div>
         </div>
     );

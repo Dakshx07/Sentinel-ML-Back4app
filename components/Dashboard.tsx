@@ -40,11 +40,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, activeView, setActiveView, 
                 setIsSidebarCollapsed(false);
             }
         };
-        
+
         // Run on initial load and add listener
         handleResize();
         window.addEventListener('resize', handleResize);
-        
+
         // Cleanup listener on component unmount
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -70,7 +70,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, activeView, setActiveView, 
             case 'commits':
                 return <CommitScanner user={user} onNavigateToSettings={navigateToSettings} repos={repos} />;
             case 'pushpull':
-                 return <PushPullPanel setActiveView={setActiveView} repos={repos} />;
+                return <PushPullPanel setActiveView={setActiveView} repos={repos} />;
             case 'refactor':
                 return <RefactorSimulator onNavigateToSettings={navigateToSettings} repos={repos} user={user} />;
             case 'repoReport':
@@ -91,22 +91,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, activeView, setActiveView, 
     };
 
     return (
-        <>
-            <Sidebar 
-                activeView={activeView} 
-                setActiveView={setActiveView} 
+        <div className="min-h-screen bg-black">
+            <Sidebar
+                activeView={activeView}
+                setActiveView={setActiveView}
                 isCollapsed={isSidebarCollapsed}
                 setIsCollapsed={setIsSidebarCollapsed}
             />
-            <main 
-                className="absolute top-16 right-0 bottom-0 overflow-y-auto p-6 md:p-8 transition-all duration-300"
-                style={{ left: isSidebarCollapsed ? '5rem' : '18rem' }}
+            <main
+                className="absolute top-24 right-0 bottom-0 overflow-y-auto p-6 md:p-8 transition-all duration-300 bg-black"
+                style={{ left: isSidebarCollapsed ? '4.5rem' : '16rem' }}
             >
                 <ErrorBoundary>
                     {renderActiveView()}
                 </ErrorBoundary>
             </main>
-        </>
+        </div>
     );
 };
 

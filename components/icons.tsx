@@ -51,11 +51,12 @@ export const ChevronDownIcon: React.FC<{ className?: string }> = ({ className })
 
 export const SentinelLogoIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 66 74" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M33.001 0L5.508 15.289V45.867C5.508 61.156 33.001 74 33.001 74S60.493 61.156 60.493 45.867V15.289L33.001 0Z" fill="url(#logo-gradient)" />
+    <path d="M33.001 0L5.508 15.289V45.867C5.508 61.156 33.001 74 33.001 74S60.493 61.156 60.493 45.867V15.289L33.001 0Z" fill="url(#logo-gradient-new)" />
     <defs>
-      <linearGradient id="logo-gradient" x1="33.001" y1="0" x2="33.001" y2="74" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#9F54FF" />
-        <stop offset="1" stopColor="#00D4FF" />
+      <linearGradient id="logo-gradient-new" x1="33.001" y1="0" x2="33.001" y2="74" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#3B82F6" />
+        <stop offset="0.5" stopColor="#8B5CF6" />
+        <stop offset="1" stopColor="#06B6D4" />
       </linearGradient>
     </defs>
   </svg>
@@ -271,5 +272,23 @@ export const VolumeUpIcon: React.FC<{ className?: string }> = ({ className }) =>
 export const DocumentPlusIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+
+export const ShieldCheckIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  </svg>
+);
+
+export const ZapIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
+export const LockIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
   </svg>
 );

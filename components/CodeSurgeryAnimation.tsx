@@ -11,11 +11,11 @@ declare global {
 type SurgeryStage = 'idle' | 'scanning' | 'diagnosing' | 'applyingFix' | 'closing' | 'secure';
 
 const VitalsMonitor: React.FC<{ status: string; vulns: string; statusColor: string }> = ({ status, vulns, statusColor }) => (
-    <div className="flex-1 glass-effect p-4 rounded-lg border border-white/10">
-        <p className="text-xs text-medium-text uppercase tracking-wider">Patient Vitals</p>
-        <div className="mt-2 text-sm">
-            <p><span className="text-medium-text">Status:</span> <span className={`font-bold ${statusColor}`}>{status}</span></p>
-            <p><span className="text-medium-text">Vulnerabilities:</span> <span className="font-bold text-white">{vulns}</span></p>
+    <div className="flex-1 bg-void-black p-4 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+        <p className="text-xs text-gray-500 uppercase tracking-wider font-mono">System Vitals</p>
+        <div className="mt-2 text-sm font-mono">
+            <p><span className="text-gray-500">Status:</span> <span className={`font-bold ${statusColor}`}>{status}</span></p>
+            <p><span className="text-gray-500">Threats:</span> <span className="font-bold text-white">{vulns}</span></p>
         </div>
     </div>
 );
@@ -23,39 +23,39 @@ const VitalsMonitor: React.FC<{ status: string; vulns: string; statusColor: stri
 const LogEntry: React.FC<{ message: string; icon: React.ReactNode }> = ({ message, icon }) => (
     <motion.li
         layout
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0 }}
-        className="flex items-start space-x-2"
+        className="flex items-start space-x-2 text-xs md:text-sm"
     >
         <div className="w-4 h-4 flex-shrink-0 mt-0.5">{icon}</div>
-        <span>{message}</span>
+        <span className="text-gray-300">{message}</span>
     </motion.li>
 );
 
 const CodeSurgeryAnimation: React.FC = () => {
     const [stage, setStage] = useState<SurgeryStage>('idle');
     const [log, setLog] = useState<string[]>([]);
-    const [vitals, setVitals] = useState({ status: 'Stable', vulns: 'Unknown', color: 'text-green-400' });
+    const [vitals, setVitals] = useState({ status: 'Stable', vulns: 'None Detected', color: 'text-green-400' });
 
     const codeRef = useRef<HTMLElement>(null);
 
     const code = useMemo(() => {
         const rawCode = `
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">get_product</span>(<span class="hljs-params">product_id</span>):
+<span class="text-purple-400">def</span> <span class="text-blue-400">get_product</span>(<span class="text-orange-400">product_id</span>):
     conn = get_db_connection()
-    <span class="hljs-comment"># VULNERABILITY: Direct string formatting</span>
-    product = conn.execute(f<span class="hljs-string">"SELECT * FROM products WHERE id = '{product_id}'"</span>).fetchone()
+    <span class="text-gray-500"># VULNERABILITY: Direct string formatting</span>
+    product = conn.execute(f<span class="text-green-400">"SELECT * FROM products WHERE id = '{product_id}'"</span>).fetchone()
     conn.close()
-    <span class="hljs-keyword">return</span> jsonify(dict(product))
+    <span class="text-purple-400">return</span> jsonify(dict(product))
     `;
         return rawCode.trim().split('\n');
     }, []);
 
     const fixedCodeHTML = `
-        <div class="bg-green-900/30 rounded -mx-4 px-4 py-1" style="white-space: pre-wrap; overflow-wrap: break-word;">
-            <span class="hljs-comment">    # FIX: Use parameterized query</span><br/>
-            <span class="">    product = conn.execute(<span class="hljs-string">"SELECT * FROM products WHERE id = ?"</span>, (product_id,)).fetchone()</span>
+        <div class="bg-green-500/10 rounded -mx-4 px-4 py-1 border-l-2 border-green-500" style="white-space: pre-wrap; overflow-wrap: break-word;">
+            <span class="text-gray-500">    # FIX: Use parameterized query</span><br/>
+            <span class="text-gray-300">    product = conn.execute(<span class="text-green-400">"SELECT * FROM products WHERE id = ?"</span>, (product_id,)).fetchone()</span>
         </div>
     `;
 
@@ -63,18 +63,18 @@ const CodeSurgeryAnimation: React.FC = () => {
 
     const runSequence = () => {
         setStage('scanning');
-        setVitals({ status: 'Scanning...', vulns: 'Unknown', color: 'text-yellow-400' });
+        setVitals({ status: 'Scanning...', vulns: 'Analyzing...', color: 'text-neon-cyan' });
         setLog(l => [...l, "Initiating deep tissue scan..."]);
 
         setTimeout(() => {
             setStage('diagnosing');
-            setVitals({ status: 'Unstable', vulns: '1 Critical', color: 'text-red-400' });
+            setVitals({ status: 'CRITICAL', vulns: '1 SQL Injection', color: 'text-red-500 animate-pulse' });
             setLog(l => [...l, "CRITICAL FINDING: SQL Injection vector detected."]);
         }, 2500);
 
         setTimeout(() => {
             setStage('applyingFix');
-            setVitals({ status: 'Applying Suture...', vulns: '1 Critical', color: 'text-yellow-400' });
+            setVitals({ status: 'Patching...', vulns: '1 Critical', color: 'text-yellow-400' });
             setLog(l => [...l, "Isolating vulnerable segment...", "Applying parametric suture..."]);
         }, 5000);
 
@@ -90,75 +90,72 @@ const CodeSurgeryAnimation: React.FC = () => {
 
         setTimeout(() => {
             setStage('secure');
-            setVitals({ status: 'Secure', vulns: '0', color: 'text-green-400' });
-            setLog(l => [...l, "Procedure complete. Patient is stable."]);
+            setVitals({ status: 'SECURE', vulns: '0', color: 'text-green-400' });
+            setLog(l => [...l, "Procedure complete. System hardened."]);
         }, 9500);
     };
 
     const reset = () => {
         setStage('idle');
         setLog([]);
-        setVitals({ status: 'Stable', vulns: 'Unknown', color: 'text-green-400' });
+        setVitals({ status: 'Stable', vulns: 'None Detected', color: 'text-green-400' });
     };
 
     const getLogIcon = (index: number) => {
         if (stage === 'secure' && index === log.length - 1) return <CheckCircleIcon className="text-green-400" />;
-        if (stage === 'diagnosing' && index === log.length - 1) return <ShieldIcon severity="Critical" />;
-        return <CpuChipIcon className="text-brand-cyan/70" />;
+        if (stage === 'diagnosing' && index === log.length - 1) return <ShieldIcon severity="Critical" className="text-red-500" />;
+        return <CpuChipIcon className="text-neon-cyan" />;
     };
 
     return (
-        <section id="live-demo" className="py-24 bg-light-secondary dark:bg-dark-primary relative overflow-hidden">
-            <div className="absolute inset-0 bg-grid-pattern opacity-20 dark:opacity-10"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-light-secondary dark:to-dark-primary"></div>
-
-            <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-                <h2 className="text-4xl md:text-5xl font-bold text-dark-text dark:text-white font-heading mb-4">Open Code Surgery</h2>
-                <p className="max-w-3xl mx-auto text-lg text-medium-dark-text dark:text-medium-text mb-12">
-                    This is not a demo. It's a live medical procedure on code. Watch Sentinel's AI surgeons find, fix, and secure a critical vulnerability in real-time.
-                </p>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto text-left">
-                    {/* Left Panel: Vitals & Log */}
-                    <div className="lg:col-span-1 space-y-4">
-                        <VitalsMonitor status={vitals.status} vulns={vitals.vulns} statusColor={vitals.color} />
-                        <div className="glass-effect p-4 rounded-lg border border-white/10 h-80 flex flex-col">
-                            <p className="text-xs text-medium-text uppercase tracking-wider mb-2 flex-shrink-0">AI Surgeon's Log</p>
-                            <ul className="text-sm text-light-text font-mono space-y-2 overflow-y-auto flex-grow pr-2">
-                                <AnimatePresence>
-                                    {log.map((msg, i) => <LogEntry key={i} message={msg} icon={getLogIcon(i)} />)}
-                                </AnimatePresence>
-                            </ul>
-                        </div>
+        <div className="w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto text-left">
+                {/* Left Panel: Vitals & Log */}
+                <div className="lg:col-span-1 space-y-4">
+                    <VitalsMonitor status={vitals.status} vulns={vitals.vulns} statusColor={vitals.color} />
+                    <div className="bg-void-black p-4 rounded-xl border border-white/10 h-80 flex flex-col shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 flex-shrink-0 font-mono">Sentinel Log</p>
+                        <ul className="font-mono space-y-3 overflow-y-auto flex-grow pr-2 custom-scrollbar">
+                            <AnimatePresence>
+                                {log.map((msg, i) => <LogEntry key={i} message={msg} icon={getLogIcon(i)} />)}
+                            </AnimatePresence>
+                        </ul>
                     </div>
+                </div>
 
-                    {/* Right Panel: Operating Theater */}
-                    <div className="lg:col-span-2 glass-effect p-4 md:p-6 rounded-lg border border-white/10 flex flex-col">
-                        <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                            <h3 className="text-lg font-bold font-heading text-dark-text dark:text-white">Operating Theater</h3>
+                {/* Right Panel: Operating Theater */}
+                <div className="lg:col-span-2 bg-void-black p-1 rounded-xl border border-white/10 flex flex-col shadow-[0_0_30px_rgba(0,243,255,0.05)] relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-cyan via-electric-purple to-neon-cyan opacity-50"></div>
+
+                    <div className="p-4 md:p-6 flex flex-col h-full">
+                        <div className="flex justify-between items-center mb-6 flex-shrink-0">
+                            <div className="flex items-center space-x-2">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                <h3 className="text-lg font-bold font-heading text-white tracking-wide">LIVE CODE SURGERY</h3>
+                            </div>
                             <div>
-                                {stage === 'idle' && <button onClick={runSequence} className="btn-primary py-2 px-4">Start Procedure</button>}
-                                {stage === 'secure' && <button onClick={reset} className="btn-secondary py-2 px-4">Run Again</button>}
+                                {stage === 'idle' && <button onClick={runSequence} className="bg-white text-black font-bold py-2 px-6 rounded hover:bg-neon-cyan transition-colors text-sm">Start Procedure</button>}
+                                {stage === 'secure' && <button onClick={reset} className="border border-white/20 text-white py-2 px-6 rounded hover:bg-white/10 transition-colors text-sm">Reset Simulation</button>}
                                 {stage !== 'idle' && stage !== 'secure' &&
-                                    <button disabled className="btn-primary py-2 px-4 opacity-50 flex items-center"><SpinnerIcon className="w-4 h-4 mr-2" /> In Progress...</button>
+                                    <button disabled className="bg-white/10 text-white py-2 px-6 rounded opacity-50 flex items-center text-sm cursor-not-allowed"><SpinnerIcon className="w-4 h-4 mr-2" /> Processing...</button>
                                 }
                             </div>
                         </div>
 
-                        <div className="bg-light-primary dark:bg-dark-primary rounded-md p-4 font-mono text-sm relative overflow-hidden flex-grow">
+                        <div className="bg-[#0a0a0a] rounded-lg p-6 font-mono text-sm relative overflow-hidden flex-grow border border-white/5">
                             <AnimatePresence>
                                 {stage === 'scanning' &&
                                     <motion.div
                                         initial={{ top: '0%' }} animate={{ top: '100%' }}
-                                        transition={{ duration: 2, ease: 'linear' }}
+                                        transition={{ duration: 2, ease: 'linear', repeat: Infinity }}
                                         exit={{ opacity: 0 }}
-                                        className="absolute left-0 w-full h-0.5 bg-brand-cyan/70 shadow-[0_0_10px_theme(colors.brand-cyan)]"
+                                        className="absolute left-0 w-full h-0.5 bg-neon-cyan shadow-[0_0_15px_rgba(0,243,255,0.8)] z-10"
                                     />
                                 }
                             </AnimatePresence>
-                            <pre className="whitespace-pre-wrap break-words"><code ref={codeRef}>
+                            <pre className="whitespace-pre-wrap break-words text-gray-300 relative z-0"><code ref={codeRef}>
                                 {code.map((line, i) => (
-                                    <div key={i} className="overflow-hidden">
+                                    <div key={i} className="overflow-hidden relative">
                                         <AnimatePresence initial={false}>
                                             {!(stage === 'applyingFix' || stage === 'closing' || stage === 'secure') || i !== vulnerableLineIndex ? (
                                                 <motion.div
@@ -166,9 +163,9 @@ const CodeSurgeryAnimation: React.FC = () => {
                                                     exit={{ opacity: 0, height: 0 }}
                                                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                                                     animate={{
-                                                        backgroundColor: stage === 'diagnosing' && i === vulnerableLineIndex ? 'rgba(255, 0, 0, 0.2)' : 'transparent',
+                                                        backgroundColor: stage === 'diagnosing' && i === vulnerableLineIndex ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
                                                     }}
-                                                    className="block"
+                                                    className={`block ${stage === 'diagnosing' && i === vulnerableLineIndex ? 'border-l-2 border-red-500 pl-2 -ml-2' : ''}`}
                                                     dangerouslySetInnerHTML={{ __html: line || ' ' }}
                                                 />
                                             ) : (
@@ -188,7 +185,7 @@ const CodeSurgeryAnimation: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     );
 };
 

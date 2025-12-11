@@ -76,6 +76,9 @@
               'medium-text': '#A4A4C8',
               'dark-text': '#1F2937',
               'medium-dark-text': '#4B5563',
+              'void-black': '#050505',
+              'neon-cyan': '#00f3ff',
+              'electric-purple': '#bd00ff',
                purple: {
                 300: '#d8b4fe',
                 700: '#7e22ce',
@@ -89,9 +92,10 @@
               }
             },
             fontFamily: {
-              heading: ['Syne', 'sans-serif'],
-              sans: ['Inter', 'sans-serif'],
-              mono: ['Fira Code', 'monospace'],
+              heading: ['Poppins', 'sans-serif'],
+              sans: ['Montserrat', 'sans-serif'],
+              mono: ['Space Grotesk', 'monospace'],
+              tech: ['Space Grotesk', 'monospace'],
             },
             animation: {
               'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -157,7 +161,7 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Syne:wght@700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link id="hljs-dark-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <link id="hljs-light-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css" disabled>
     <script>
@@ -178,38 +182,50 @@
     <!-- js-beautify removed - install via npm if needed -->
     <script src="https://cdn.jsdelivr.net/combine/npm/highlight.js@11.9.0/build/highlight.min.js,npm/highlight.js@11.9.0/build/languages/python.min.js,npm/highlight.js@11.9.0/build/languages/typescript.min.js,npm/highlight.js@11.9.0/build/languages/xml.min.js,npm/highlight.js@11.9.0/build/languages/hcl.min.js,npm/highlight.js@11.9.0/build/languages/diff.min.js"></script>
     <style>
+      /* Hide Unicorn Studio Watermark */
+      .us-branding, [class*="us-branding"], a[href*="unicorn.studio"] {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      
       html {
         scroll-behavior: smooth;
       }
       body {
-        font-family: 'Inter', sans-serif;
-        line-height: 1.7;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
       h1, h2, h3, h4, h5, h6 {
-        font-family: 'Syne', sans-serif;
+        font-family: 'Space Grotesk', sans-serif;
+        letter-spacing: -0.02em;
       }
-      /* Custom Scrollbar Styling */
+      /* Custom Scrollbar Styling - Hidden */
       ::-webkit-scrollbar {
-        width: 12px;
-        height: 12px;
+        width: 0;
+        height: 0;
+        display: none;
       }
       ::-webkit-scrollbar-track {
-        background: theme('colors.light-primary');
+        background: transparent;
       }
       .dark ::-webkit-scrollbar-track {
-        background: theme('colors.dark-primary');
+        background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background-color: theme('colors.medium-text');
+        background-color: transparent;
         border-radius: 10px;
-        border: 3px solid theme('colors.light-primary');
+        border: none;
       }
       .dark ::-webkit-scrollbar-thumb {
-        background-color: theme('colors.medium-dark-text');
-        border: 3px solid theme('colors.dark-primary');
+        background-color: transparent;
+        border: none;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background-color: theme('colors.brand-cyan');
+        background-color: transparent;
       }
       .hljs {
         background: transparent !important;
@@ -357,10 +373,22 @@
   <!-- Importmap removed - Vite handles imports from node_modules -->
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-light-primary dark:bg-dark-primary">
+  <body class="bg-black dark:bg-black">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     
+    <!-- Unicorn Studio Script -->
+    <script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.5.2/dist/unicornStudio.umd.js"></script>
+    <script>
+      // Initialize Unicorn Studio if it hasn't been already
+      window.addEventListener('load', function() {
+        if (window.UnicornStudio && !window.UnicornStudio.isInitialized) {
+          UnicornStudio.init();
+          window.UnicornStudio.isInitialized = true;
+        }
+      });
+    </script>
+
     <!-- UMD Scripts: Loaded after React is available on window -->
     <script>
       // Load UMD scripts only after React is available

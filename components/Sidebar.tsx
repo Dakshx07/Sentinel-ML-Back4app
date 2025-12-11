@@ -15,11 +15,10 @@ import {
     DocumentTextIcon,
     TrendingUpIcon,
     AlertTriangleIcon,
-    DatabaseZapIcon,
     DocumentPlusIcon
 } from './icons';
 import { DashboardView } from '../types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavLinkProps {
     id: DashboardView;
@@ -28,27 +27,59 @@ interface NavLinkProps {
     isActive: boolean;
     isCollapsed: boolean;
     onClick: (id: DashboardView) => void;
+    accentColor?: string;
 }
 
-const NavLink: React.FC<NavLinkProps> = ({ id, label, icon, isActive, isCollapsed, onClick }) => {
-    const activeClasses = "bg-brand-purple/10 text-brand-purple dark:bg-brand-purple/20 dark:text-white";
-    const inactiveClasses = "text-medium-dark-text dark:text-medium-text hover:bg-gray-200 dark:hover:bg-dark-primary hover:text-dark-text dark:hover:text-white";
+const NavLink: React.FC<NavLinkProps> = ({ id, label, icon, isActive, isCollapsed, onClick, accentColor = 'blue' }) => {
+    const colorClasses: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+        blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', glow: '0 0 20px rgba(59,130,246,0.15)' },
+        green: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', glow: '0 0 20px rgba(16,185,129,0.15)' },
+        violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-400', glow: '0 0 20px rgba(139,92,246,0.15)' },
+        amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', glow: '0 0 20px rgba(245,158,11,0.15)' },
+        gray: { bg: 'bg-white/5', border: 'border-white/10', text: 'text-gray-400', glow: '0 0 10px rgba(255,255,255,0.05)' },
+    };
+
+    const colors = colorClasses[accentColor] || colorClasses.blue;
 
     return (
-        <button
+        <motion.button
             onClick={() => onClick(id)}
-            className={`flex items-center w-full p-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${isActive ? activeClasses : inactiveClasses}`}
+            className={`relative flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group overflow-hidden
+                ${isActive
+                    ? `${colors.bg} ${colors.text} border ${colors.border}`
+                    : 'text-gray-500 hover:text-white hover:bg-white/[0.03] border border-transparent'
+                }`}
             title={label}
+            whileHover={{ x: isCollapsed ? 0 : 4 }}
+            whileTap={{ scale: 0.97 }}
+            style={isActive ? { boxShadow: colors.glow } : undefined}
         >
-            <span className="flex-shrink-0 w-5 h-5">{icon}</span>
-            <motion.span
-                className="ml-4 truncate"
-                animate={{ opacity: isCollapsed ? 0 : 1, width: isCollapsed ? 0 : 'auto' }}
-                transition={{ duration: 0.2, delay: isCollapsed ? 0 : 0.1 }}
-            >
-                {label}
-            </motion.span>
-        </button>
+            {/* Shimmer effect on hover */}
+            <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100"
+                initial={{ x: '-100%' }}
+                whileHover={{ x: '100%' }}
+                transition={{ duration: 0.6, ease: 'easeInOut' }}
+            />
+
+            <span className={`relative flex-shrink-0 w-5 h-5 transition-all duration-200 ${isActive ? colors.text : 'group-hover:text-white'}`}>
+                {icon}
+            </span>
+
+            <AnimatePresence>
+                {!isCollapsed && (
+                    <motion.span
+                        className="relative ml-3 truncate"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.15 }}
+                    >
+                        {label}
+                    </motion.span>
+                )}
+            </AnimatePresence>
+        </motion.button>
     );
 };
 
@@ -62,49 +93,63 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapsed, setIsCollapsed }) => {
 
-    // FEAT: Overhauled nav items to reflect the new, functional feature set.
     const mainNavItems = [
-        { id: 'developerCommandCenter' as DashboardView, label: 'Command Center', icon: <TrendingUpIcon /> },
-        { id: 'repositories' as DashboardView, label: 'Repositories', icon: <RepoIcon /> },
+        { id: 'developerCommandCenter' as DashboardView, label: 'Command Center', icon: <TrendingUpIcon />, color: 'blue' },
+        { id: 'repositories' as DashboardView, label: 'Repositories', icon: <RepoIcon />, color: 'green' },
     ];
 
     const securityToolsNavItems = [
-        { id: 'studio' as DashboardView, label: 'Studio Sandbox', icon: <StudioIcon /> },
-        { id: 'gitops' as DashboardView, label: 'GitOps Scanner', icon: <GitBranchIcon /> },
-        { id: 'commits' as DashboardView, label: 'Commit History', icon: <HistoryIcon /> },
-        { id: 'pushpull' as DashboardView, label: 'PR Review', icon: <PullRequestIcon /> },
+        { id: 'studio' as DashboardView, label: 'Studio', icon: <StudioIcon />, color: 'violet' },
+        { id: 'gitops' as DashboardView, label: 'GitOps Scanner', icon: <GitBranchIcon />, color: 'blue' },
+        { id: 'commits' as DashboardView, label: 'Commits', icon: <HistoryIcon />, color: 'gray' },
+        { id: 'pushpull' as DashboardView, label: 'PR Review', icon: <PullRequestIcon />, color: 'green' },
     ];
 
     const aiAgentsNavItems = [
-        { id: 'refactor' as DashboardView, label: 'Auto-Refactor Agent', icon: <BrainCircuitIcon /> },
-        { id: 'workflowStreamliner' as DashboardView, label: 'Repo Chatbot', icon: <CommandLineIcon /> },
-        { id: 'repoReport' as DashboardView, label: 'Repo Report', icon: <DocumentTextIcon /> },
-        { id: 'imageGenerator' as DashboardView, label: 'Image Generator', icon: <ImageIcon /> },
+        { id: 'refactor' as DashboardView, label: 'Refactor', icon: <BrainCircuitIcon />, color: 'violet' },
+        { id: 'workflowStreamliner' as DashboardView, label: 'Chatbot', icon: <CommandLineIcon />, color: 'blue' },
+        { id: 'repoReport' as DashboardView, label: 'Report', icon: <DocumentTextIcon />, color: 'amber' },
+        { id: 'imageGenerator' as DashboardView, label: 'Image Gen', icon: <ImageIcon />, color: 'violet' },
     ];
 
     const productivityNavItems = [
-        { id: 'readmeGenerator' as DashboardView, label: 'README Generator', icon: <DocumentPlusIcon /> },
+        { id: 'readmeGenerator' as DashboardView, label: 'README', icon: <DocumentPlusIcon />, color: 'green' },
     ];
 
     const accountNavItems = [
-        { id: 'docs' as DashboardView, label: 'User Guide', icon: <DocsIcon /> },
-        { id: 'smartAlerts' as DashboardView, label: 'Smart Alerts', icon: <AlertTriangleIcon /> },
-        { id: 'settings' as DashboardView, label: 'Settings', icon: <SettingsIcon /> },
+        { id: 'docs' as DashboardView, label: 'Docs', icon: <DocsIcon />, color: 'blue' },
+        { id: 'smartAlerts' as DashboardView, label: 'Alerts', icon: <AlertTriangleIcon />, color: 'amber' },
+        { id: 'settings' as DashboardView, label: 'Settings', icon: <SettingsIcon />, color: 'gray' },
     ];
 
-    const NavSection: React.FC<{ title?: string, items: { id: DashboardView, label: string, icon: React.ReactNode }[] }> = ({ title, items }) => (
-        <div>
-            {title && (
-                <motion.p
-                    className="px-3 pt-6 pb-2 text-xs font-semibold text-medium-dark-text dark:text-medium-text uppercase tracking-wider"
-                    animate={{ opacity: isCollapsed ? 0 : 1, width: isCollapsed ? 0 : 'auto' }}
-                    transition={{ duration: 0.2, delay: isCollapsed ? 0 : 0.1 }}
+    const NavSection: React.FC<{ title?: string, items: { id: DashboardView, label: string, icon: React.ReactNode, color: string }[] }> = ({ title, items }) => (
+        <div className="mb-1">
+            {title && !isCollapsed && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="px-3 pt-5 pb-2 flex items-center space-x-2"
                 >
-                    {title}
-                </motion.p>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                    <span className="text-[9px] font-semibold text-gray-600 uppercase tracking-[0.2em]">{title}</span>
+                    <div className="h-[1px] flex-1 bg-gradient-to-l from-white/10 to-transparent" />
+                </motion.div>
             )}
-            <ul className="space-y-1">
-                {items.map(item => <li key={item.id}><NavLink {...item} isCollapsed={isCollapsed} isActive={activeView === item.id} onClick={setActiveView} /></li>)}
+            {title && isCollapsed && (
+                <div className="h-px my-3 mx-3 bg-white/5" />
+            )}
+            <ul className="space-y-0.5">
+                {items.map(item => (
+                    <li key={item.id}>
+                        <NavLink
+                            {...item}
+                            isCollapsed={isCollapsed}
+                            isActive={activeView === item.id}
+                            onClick={setActiveView}
+                            accentColor={item.color}
+                        />
+                    </li>
+                ))}
             </ul>
         </div>
     );
@@ -112,26 +157,40 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isCollapse
     return (
         <motion.aside
             initial={false}
-            animate={{ width: isCollapsed ? '5rem' : '18rem' }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="bg-light-secondary dark:bg-dark-secondary border-r border-gray-200 dark:border-white/10 flex flex-col h-full fixed top-0 left-0 pt-16 z-40"
+            animate={{ width: isCollapsed ? '4.5rem' : '15rem' }}
+            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+            className="fixed top-0 left-0 h-full pt-24 z-40 flex flex-col"
         >
-            <div className="flex-grow p-3 overflow-y-auto overflow-x-hidden">
-                <NavSection items={mainNavItems} />
-                <NavSection title="Security Tools" items={securityToolsNavItems} />
-                <NavSection title="AI Agents" items={aiAgentsNavItems} />
-                <NavSection title="Productivity" items={productivityNavItems} />
+            {/* Glass background with curved edge */}
+            <div className="absolute inset-0 bg-[#030303]">
+                {/* Curved right edge */}
+                <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-black/50 to-transparent" />
             </div>
 
-            <div className="p-3 mt-auto border-t border-gray-200 dark:border-white/10">
+            {/* Glowing border on right */}
+            <div className="absolute right-0 top-24 bottom-0 w-[1px] bg-gradient-to-b from-blue-500/20 via-violet-500/10 to-transparent" />
+
+            {/* Content */}
+            <div className="relative flex-grow px-2 overflow-y-auto overflow-x-hidden scrollbar-hide">
+                <NavSection items={mainNavItems} />
+                <NavSection title="Security" items={securityToolsNavItems} />
+                <NavSection title="AI" items={aiAgentsNavItems} />
+                <NavSection title="Tools" items={productivityNavItems} />
+            </div>
+
+            {/* Bottom section */}
+            <div className="relative p-2 mt-auto">
+                <div className="h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent mb-2" />
                 <NavSection items={accountNavItems} />
-                <button
+                <motion.button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="w-full flex items-center justify-center p-2.5 mt-2 rounded-lg text-medium-dark-text dark:text-medium-text hover:bg-gray-200 dark:hover:bg-dark-primary"
-                    title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    className="w-full flex items-center justify-center p-2.5 mt-1 rounded-xl text-gray-600 hover:text-blue-400 hover:bg-blue-500/10 transition-all duration-200 border border-transparent hover:border-blue-500/20"
+                    title={isCollapsed ? "Expand" : "Collapse"}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                 >
-                    {isCollapsed ? <DoubleArrowRightIcon className="w-5 h-5" /> : <DoubleArrowLeftIcon className="w-5 h-5" />}
-                </button>
+                    {isCollapsed ? <DoubleArrowRightIcon className="w-4 h-4" /> : <DoubleArrowLeftIcon className="w-4 h-4" />}
+                </motion.button>
             </div>
         </motion.aside>
     );
