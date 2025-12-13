@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
@@ -124,7 +124,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ user, repos }) => {
                 className="absolute top-24 right-0 bottom-0 overflow-y-auto p-6 md:p-8 transition-all duration-300 bg-black"
                 style={{ left: isSidebarCollapsed ? '4.5rem' : '15rem' }}
             >
-                <Outlet />
+                <Suspense fallback={
+                    <div className="h-full w-full flex items-center justify-center">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-gray-500 text-sm font-mono">Loading Module...</p>
+                        </div>
+                    </div>
+                }>
+                    <Outlet />
+                </Suspense>
             </main>
         </div>
     );

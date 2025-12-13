@@ -24,7 +24,7 @@ function openDB(): Promise<IDBDatabase> {
             }
             if (!tempDb.objectStoreNames.contains(ALERTS_STORE)) {
                 const alertStore = tempDb.createObjectStore(ALERTS_STORE, { keyPath: 'id', autoIncrement: true });
-                 alertStore.createIndex('timestamp', 'timestamp', { unique: false });
+                alertStore.createIndex('timestamp', 'timestamp', { unique: false });
             }
         };
 
@@ -57,7 +57,7 @@ export async function logAlert(alert: AlertRecord): Promise<void> {
     const transaction = db.transaction(ALERTS_STORE, 'readwrite');
     const store = transaction.objectStore(ALERTS_STORE);
     store.add(alert);
-     return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         transaction.oncomplete = () => resolve();
         transaction.onerror = () => reject(transaction.error);
     });
@@ -101,4 +101,9 @@ export async function getAllAlerts(): Promise<AlertRecord[]> {
         };
         request.onerror = () => reject(request.error);
     });
+}
+
+export async function getRecentAlerts(limit: number = 10): Promise<AlertRecord[]> {
+    const alerts = await getAllAlerts();
+    return alerts.slice(0, limit);
 }

@@ -107,12 +107,14 @@ const READMEGenerator: React.FC<READMEGeneratorProps> = ({ repos, user, onNaviga
     if (apiKeyMissing || !user?.github) {
         return (
             <div className="h-full w-full flex items-center justify-center p-4">
-                <div className="text-center bg-black/40 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl max-w-md">
-                    <ErrorIcon className="w-16 h-16 text-red-500 mb-6 mx-auto animate-pulse" />
-                    <h3 className="text-2xl font-bold text-white mb-2 font-heading">Access Denied</h3>
-                    <p className="mt-2 text-gray-400">Security protocols require API configuration and GitHub authentication.</p>
-                    <button onClick={onNavigateToSettings} className="mt-8 px-8 py-3 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform flex items-center mx-auto">
-                        <SettingsIcon className="w-5 h-5 mr-2" /> Configure System
+                <div className="text-center bg-black/80 backdrop-blur-xl border border-red-500/30 p-10 rounded-none shadow-[0_0_50px_rgba(239,68,68,0.2)] max-w-md relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent"></div>
+                    <ErrorIcon className="w-16 h-16 text-red-500 mb-6 mx-auto animate-pulse relative z-10" />
+                    <h3 className="text-2xl font-bold text-white mb-2 font-heading tracking-widest relative z-10">ACCESS DENIED</h3>
+                    <p className="mt-2 text-gray-400 font-mono text-xs relative z-10">Security protocols require API configuration and GitHub authentication.</p>
+                    <button onClick={onNavigateToSettings} className="mt-8 px-8 py-3 bg-red-600 text-white font-bold font-mono text-xs uppercase tracking-widest hover:bg-red-500 transition-all flex items-center mx-auto relative z-10 clip-path-polygon">
+                        <SettingsIcon className="w-4 h-4 mr-2" /> Configure System
                     </button>
                 </div>
             </div>
@@ -122,26 +124,28 @@ const READMEGenerator: React.FC<READMEGeneratorProps> = ({ repos, user, onNaviga
     const isLoading = state === 'analyzing' || state === 'generating' || state === 'creating_pr';
 
     return (
-    return (
-        <div className="h-full w-full flex flex-col space-y-6 animate-fade-in-up p-6">
+        <div className="h-full w-full flex flex-col space-y-6 animate-fade-in-up p-6 overflow-y-auto custom-scrollbar">
             {/* Header Section */}
-            <div className="flex-shrink-0 flex flex-col md:flex-row md:items-center md:justify-between bg-black/40 backdrop-blur-xl border border-white/10 p-6 rounded-3xl relative z-20">
-                <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center">
-                        <DocumentPlusIcon className="w-6 h-6 text-white" />
+            <div className="flex-shrink-0 flex flex-col md:flex-row md:items-center md:justify-between bg-black/60 backdrop-blur-xl border border-white/10 p-6 relative z-20 group overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-lime-500 shadow-[0_0_15px_rgba(132,204,22,0.5)]"></div>
+
+                <div className="flex items-center space-x-4 relative z-10">
+                    <div className="w-12 h-12 bg-lime-500/10 border border-lime-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(132,204,22,0.1)]">
+                        <DocumentPlusIcon className="w-6 h-6 text-lime-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold font-heading text-white">README Generator</h1>
-                        <p className="text-gray-400 text-sm">Autonomous documentation architect</p>
+                        <h1 className="text-3xl font-bold font-heading text-white tracking-tighter">README GENERATOR</h1>
+                        <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Autonomous Documentation Architect</p>
                     </div>
                 </div>
 
-                <div className="flex items-center space-x-3 mt-4 md:mt-0">
+                <div className="flex items-center space-x-3 mt-4 md:mt-0 relative z-10">
                     {repos.length > 0 && (
                         <Dropdown
                             trigger={
-                                <button className="flex items-center justify-between w-64 bg-black/50 border border-white/10 text-white px-4 py-2.5 rounded-xl hover:border-purple-500/50 transition-colors text-sm">
-                                    <span className="truncate">{selectedRepoFullName || 'Select Repository'}</span>
+                                <button className="flex items-center justify-between w-64 bg-black/50 border border-white/10 text-white px-4 py-2.5 hover:border-lime-500/50 transition-colors text-xs font-mono uppercase tracking-wider">
+                                    <span className="truncate">{selectedRepoFullName || 'SELECT REPOSITORY'}</span>
                                     <ChevronDownIcon className="w-4 h-4 text-gray-500 ml-2" />
                                 </button>
                             }
@@ -156,8 +160,8 @@ const READMEGenerator: React.FC<READMEGeneratorProps> = ({ repos, user, onNaviga
 
                     <Dropdown
                         trigger={
-                            <button className="flex items-center justify-between w-48 bg-black/50 border border-white/10 text-white px-4 py-2.5 rounded-xl hover:border-purple-500/50 transition-colors text-sm">
-                                <span className="truncate">{templateOptions.find(t => t.id === selectedTemplate)?.name || 'Select Template'}</span>
+                            <button className="flex items-center justify-between w-48 bg-black/50 border border-white/10 text-white px-4 py-2.5 hover:border-lime-500/50 transition-colors text-xs font-mono uppercase tracking-wider">
+                                <span className="truncate">{templateOptions.find(t => t.id === selectedTemplate)?.name || 'SELECT TEMPLATE'}</span>
                                 <ChevronDownIcon className="w-4 h-4 text-gray-500 ml-2" />
                             </button>
                         }
@@ -175,16 +179,16 @@ const READMEGenerator: React.FC<READMEGeneratorProps> = ({ repos, user, onNaviga
                         onClick={state === 'done' ? handleCreatePR : handleGenerate}
                         disabled={isLoading || !selectedRepoFullName}
                         className={`
-                            relative overflow-hidden px-6 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center min-w-[160px] transition-all
-                            ${isLoading ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-white text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]'}
+                            relative overflow-hidden px-6 py-2.5 font-bold text-xs font-mono uppercase tracking-widest flex items-center justify-center min-w-[160px] transition-all
+                            ${isLoading ? 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5' : 'bg-lime-500 text-black hover:bg-lime-400 shadow-[0_0_20px_rgba(132,204,22,0.4)]'}
                         `}
                     >
                         {isLoading ? (
-                            <><SpinnerIcon className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
+                            <><SpinnerIcon className="w-4 h-4 mr-2 animate-spin" /> PROCESSING...</>
                         ) : state === 'done' ? (
-                            <><GithubIcon className="w-4 h-4 mr-2" /> Create PR</>
+                            <><GithubIcon className="w-4 h-4 mr-2" /> CREATE PR</>
                         ) : (
-                            <><BrainCircuitIcon className="w-4 h-4 mr-2" /> Generate</>
+                            <><BrainCircuitIcon className="w-4 h-4 mr-2" /> GENERATE</>
                         )}
                     </motion.button>
                 </div>
@@ -194,56 +198,58 @@ const READMEGenerator: React.FC<READMEGeneratorProps> = ({ repos, user, onNaviga
             <div className="flex-grow min-h-0 grid grid-rows-[auto_1fr] gap-4 relative z-10">
                 {/* Toolbar */}
                 <div className="flex items-center justify-between px-2">
-                    <div className="flex bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg p-1">
+                    <div className="flex bg-black/40 backdrop-blur-xl border border-white/10 p-1">
                         <button
                             onClick={() => setViewMode('edit')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'edit' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                            className={`px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-all ${viewMode === 'edit' ? 'bg-lime-500/20 text-lime-400 border border-lime-500/30' : 'text-gray-500 hover:text-gray-300 border border-transparent'}`}
                         >
-                            <CodeIcon className="w-3.5 h-3.5 inline mr-1.5" /> Editor
+                            <CodeIcon className="w-3 h-3 inline mr-1.5" /> EDITOR
                         </button>
                         <button
                             onClick={() => setViewMode('split')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'split' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'} hidden md:block`}
+                            className={`px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-all ${viewMode === 'split' ? 'bg-lime-500/20 text-lime-400 border border-lime-500/30' : 'text-gray-500 hover:text-gray-300 border border-transparent'} hidden md:block ml-1`}
                         >
-                            <span className="flex items-center"><span className="w-3.5 h-3.5 border-r border-current mr-1.5 opacity-50"></span> Split</span>
+                            <span className="flex items-center"><span className="w-3 h-3 border-r border-current mr-1.5 opacity-50"></span> SPLIT</span>
                         </button>
                         <button
                             onClick={() => setViewMode('preview')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'preview' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                            className={`px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-all ${viewMode === 'preview' ? 'bg-lime-500/20 text-lime-400 border border-lime-500/30' : 'text-gray-500 hover:text-gray-300 border border-transparent'} ml-1`}
                         >
-                            <EyeIcon className="w-3.5 h-3.5 inline mr-1.5" /> Preview
+                            <EyeIcon className="w-3 h-3 inline mr-1.5" /> PREVIEW
                         </button>
                     </div>
                     {generatedReadme && (
-                        <div className="text-xs text-gray-500 font-mono">
-                            {generatedReadme.length} chars • {generatedReadme.split('\n').length} lines
+                        <div className="text-[10px] text-lime-500/70 font-mono uppercase tracking-widest bg-lime-500/5 px-3 py-1 border border-lime-500/10">
+                            {generatedReadme.length} CHARS • {generatedReadme.split('\n').length} LINES
                         </div>
                     )}
                 </div>
 
                 {/* Editor/Preview Container */}
-                <div className="relative flex-grow min-h-0 bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+                <div className="relative flex-grow min-h-0 bg-black/60 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-lime-500/5 blur-[60px] rounded-full pointer-events-none group-hover:bg-lime-500/10 transition-colors duration-500"></div>
+
                     {isLoading && state !== 'creating_pr' ? (
-                        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+                        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
                             <div className="relative">
-                                <div className="w-20 h-20 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
+                                <div className="w-24 h-24 border-2 border-white/5 border-t-lime-500 rounded-full animate-spin"></div>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <BrainCircuitIcon className="w-8 h-8 text-white/50 animate-pulse" />
+                                    <BrainCircuitIcon className="w-8 h-8 text-lime-500 animate-pulse" />
                                 </div>
                             </div>
-                            <p className="mt-6 text-lg font-bold text-white tracking-wide animate-pulse">
-                                {state === 'analyzing' ? 'ANALYZING REPOSITORY STRUCTURE' : 'SYNTHESIZING DOCUMENTATION'}
+                            <p className="mt-8 text-xl font-bold text-white tracking-widest font-heading animate-pulse">
+                                {state === 'analyzing' ? 'ANALYZING STRUCTURE' : 'SYNTHESIZING DOCS'}
                             </p>
-                            <p className="text-sm text-gray-500 mt-2 font-mono">This may take a moment...</p>
+                            <p className="text-xs text-lime-500/70 mt-2 font-mono uppercase tracking-widest">Neural Networks Active</p>
                         </div>
                     ) : null}
 
                     <div className={`h-full w-full grid ${viewMode === 'split' ? 'grid-cols-2 divide-x divide-white/10' : 'grid-cols-1'}`}>
                         {/* Editor Pane */}
                         {(viewMode === 'edit' || viewMode === 'split') && (
-                            <div className="h-full overflow-hidden flex flex-col">
-                                <div className="bg-white/5 px-4 py-2 border-b border-white/5 text-xs font-mono text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                                    <span>Markdown Source</span>
+                            <div className="h-full overflow-hidden flex flex-col bg-[#050505]">
+                                <div className="bg-white/5 px-4 py-2 border-b border-white/5 text-[10px] font-mono text-gray-500 uppercase tracking-widest flex justify-between items-center">
+                                    <span>MARKDOWN SOURCE</span>
                                 </div>
                                 <div className="flex-grow overflow-auto custom-scrollbar">
                                     <CodeMirror
@@ -287,10 +293,10 @@ const READMEGenerator: React.FC<READMEGeneratorProps> = ({ repos, user, onNaviga
                         {/* Preview Pane */}
                         {(viewMode === 'preview' || viewMode === 'split') && (
                             <div className="h-full overflow-hidden flex flex-col bg-[#0d1117]">
-                                <div className="bg-white/5 px-4 py-2 border-b border-white/5 text-xs font-mono text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                                    <span>Live Preview</span>
+                                <div className="bg-white/5 px-4 py-2 border-b border-white/5 text-[10px] font-mono text-gray-500 uppercase tracking-widest flex justify-between items-center">
+                                    <span>LIVE PREVIEW</span>
                                 </div>
-                                <div className="flex-grow overflow-auto p-8 custom-scrollbar prose prose-invert max-w-none prose-headings:font-heading prose-a:text-blue-400 prose-pre:bg-[#161b22] prose-pre:border prose-pre:border-white/10 prose-blockquote:border-l-4 prose-blockquote:border-white/20 prose-blockquote:bg-white/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-code:text-blue-300 prose-code:bg-white/5 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+                                <div className="flex-grow overflow-auto p-8 custom-scrollbar prose prose-invert max-w-none prose-headings:font-heading prose-a:text-lime-400 prose-pre:bg-[#161b22] prose-pre:border prose-pre:border-white/10 prose-blockquote:border-l-2 prose-blockquote:border-lime-500 prose-blockquote:bg-white/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-code:text-lime-300 prose-code:bg-white/5 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
                                     {generatedReadme ? (
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                             {generatedReadme}
@@ -298,7 +304,7 @@ const READMEGenerator: React.FC<READMEGeneratorProps> = ({ repos, user, onNaviga
                                     ) : (
                                         <div className="h-full flex flex-col items-center justify-center text-gray-600 opacity-50">
                                             <EyeIcon className="w-12 h-12 mb-4" />
-                                            <p>Preview will appear here</p>
+                                            <p className="font-mono text-xs uppercase tracking-widest">Preview will appear here</p>
                                         </div>
                                     )}
                                 </div>
