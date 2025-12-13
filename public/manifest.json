@@ -1,0 +1,25 @@
+{
+    "name": "Sentinel AI",
+    "short_name": "Sentinel",
+    "description": "AI-Powered Code Security Agent - Detect vulnerabilities, auto-fix issues, and harden your codebase with intelligent automation.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#22c55e",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "developer tools",
+        "security",
+        "productivity"
+    ],
+    "lang": "en",
+    "dir": "ltr"
+}
