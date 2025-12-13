@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { SentinelLogoIcon } from './icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const DEFAULT_STEPS = [
@@ -21,52 +20,102 @@ const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ progressText, steps = D
     useEffect(() => {
         if (progressText) return;
 
-        // Cycle through steps for a more dynamic feel
         const interval = setInterval(() => {
             setCurrentStep(prev => (prev + 1) % steps.length);
-        }, 2200); // Slower, more deliberate pace
+        }, 2200);
         return () => clearInterval(interval);
     }, [progressText, steps]);
 
     return (
         <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            {/* New Logo Animation */}
-            <div className="relative w-32 h-32">
-                {/* Outer ring - slow */}
-                <div 
-                    className="absolute inset-0 border-2 border-brand-cyan/20 rounded-full animate-spin"
-                    style={{ animationDuration: '10s' }}
-                ></div>
-                {/* Middle ring - faster, reverse */}
-                <div 
-                    className="absolute inset-4 border border-brand-purple/30 rounded-full animate-spin"
-                    style={{ animationDirection: 'reverse', animationDuration: '7s' }}
-                ></div>
-                
-                {/* Pulsing core glow */}
-                <div className="absolute inset-8 bg-brand-purple/20 rounded-full animate-pulse-slow"></div>
+            {/* New Modern Loader Animation */}
+            <div className="relative w-40 h-40">
+                {/* Outer glow ring */}
+                <motion.div
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 blur-xl"
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
 
-                {/* Central Icon */}
+                {/* Spinning outer ring */}
+                <motion.div
+                    className="absolute inset-0 rounded-full border-2 border-transparent"
+                    style={{
+                        borderTopColor: '#22c55e',
+                        borderRightColor: '#22c55e40',
+                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                />
+
+                {/* Second spinning ring - reverse */}
+                <motion.div
+                    className="absolute inset-4 rounded-full border-2 border-transparent"
+                    style={{
+                        borderBottomColor: '#16a34a',
+                        borderLeftColor: '#16a34a40',
+                    }}
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+
+                {/* Pulsing inner circle */}
+                <motion.div
+                    className="absolute inset-8 rounded-full bg-gradient-to-br from-green-500/10 to-emerald-500/10"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+
+                {/* Central Logo - X symbol */}
                 <div className="absolute inset-8 flex items-center justify-center">
-                    <SentinelLogoIcon className="w-12 h-12" />
+                    <motion.div
+                        className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(34,197,94,0.4)]"
+                        animate={{ scale: [1, 0.95, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <svg viewBox="0 0 24 24" className="w-10 h-10" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                            <path d="M6 6L18 18M18 6L6 18" />
+                        </svg>
+                    </motion.div>
                 </div>
-                
-                {/* Scanner line */}
-                <div className="absolute inset-0 overflow-hidden rounded-full">
-                    <div 
-                        className="absolute top-1/2 left-1/2 w-[200%] h-0.5 bg-gradient-to-r from-transparent via-brand-cyan to-transparent origin-center animate-scanner-spin"
-                        style={{ animationDuration: '2.5s' }}
-                    ></div>
-                </div>
+
+                {/* Orbiting dots */}
+                {[0, 1, 2, 3].map((i) => (
+                    <motion.div
+                        key={i}
+                        className="absolute w-2 h-2 bg-green-400 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)]"
+                        style={{
+                            top: '50%',
+                            left: '50%',
+                            marginTop: -4,
+                            marginLeft: -4,
+                        }}
+                        animate={{
+                            x: [0, Math.cos((i * Math.PI) / 2) * 70, 0],
+                            y: [0, Math.sin((i * Math.PI) / 2) * 70, 0],
+                            opacity: [0.3, 1, 0.3],
+                        }}
+                        transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: i * 0.5,
+                        }}
+                    />
+                ))}
             </div>
 
             {/* Title */}
-            <h3 className="text-lg font-bold text-dark-text dark:text-light-text font-heading mt-8">
-                 {progressText ? 'Scanning...' : 'Analyzing Code'}
-            </h3>
+            <motion.h3
+                className="text-xl font-bold text-white mt-8"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                {progressText ? 'Processing...' : 'Analyzing Code'}
+            </motion.h3>
 
-            {/* Animated Text */}
-            <div className="w-full max-w-sm h-6 mt-2 overflow-hidden text-sm font-mono text-medium-dark-text dark:text-medium-text">
+            {/* Animated Status Text */}
+            <div className="w-full max-w-sm h-6 mt-3 overflow-hidden text-sm font-mono text-gray-400">
                 <AnimatePresence mode="wait">
                     <motion.p
                         key={progressText || currentStep}
@@ -79,6 +128,18 @@ const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ progressText, steps = D
                         {progressText || steps[currentStep]}
                     </motion.p>
                 </AnimatePresence>
+            </div>
+
+            {/* Progress Indicator */}
+            <div className="flex space-x-2 mt-4">
+                {steps.map((_, i) => (
+                    <motion.div
+                        key={i}
+                        className={`w-2 h-2 rounded-full ${i === currentStep ? 'bg-green-500' : 'bg-white/10'}`}
+                        animate={i === currentStep ? { scale: [1, 1.3, 1] } : {}}
+                        transition={{ duration: 0.5, repeat: Infinity }}
+                    />
+                ))}
             </div>
         </div>
     );

@@ -50,15 +50,32 @@ export const ChevronDownIcon: React.FC<{ className?: string }> = ({ className })
 );
 
 export const SentinelLogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 66 74" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M33.001 0L5.508 15.289V45.867C5.508 61.156 33.001 74 33.001 74S60.493 61.156 60.493 45.867V15.289L33.001 0Z" fill="url(#logo-gradient-new)" />
-    <defs>
-      <linearGradient id="logo-gradient-new" x1="33.001" y1="0" x2="33.001" y2="74" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#3B82F6" />
-        <stop offset="0.5" stopColor="#8B5CF6" />
-        <stop offset="1" stopColor="#06B6D4" />
-      </linearGradient>
-    </defs>
+  <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    {/* Rounded square background - black with subtle border */}
+    <rect x="4" y="4" width="40" height="40" rx="10" fill="#0a0a0a" />
+    <rect x="4" y="4" width="40" height="40" rx="10" fill="none" stroke="#333" strokeWidth="1" />
+
+    {/* Neural network icon - matching landing page */}
+    <g stroke="white" strokeWidth="2" strokeLinecap="round">
+      {/* Central node */}
+      <circle cx="24" cy="24" r="3" fill="white" strokeWidth="0" />
+
+      {/* Outer nodes - 4 corners */}
+      <circle cx="14" cy="16" r="2" fill="white" strokeWidth="0" />
+      <circle cx="34" cy="16" r="2" fill="white" strokeWidth="0" />
+      <circle cx="14" cy="32" r="2" fill="white" strokeWidth="0" />
+      <circle cx="34" cy="32" r="2" fill="white" strokeWidth="0" />
+
+      {/* Connection lines to center */}
+      <line x1="14" y1="16" x2="24" y2="24" />
+      <line x1="34" y1="16" x2="24" y2="24" />
+      <line x1="14" y1="32" x2="24" y2="24" />
+      <line x1="34" y1="32" x2="24" y2="24" />
+
+      {/* Cross connections */}
+      <line x1="14" y1="16" x2="34" y2="32" opacity="0.4" />
+      <line x1="34" y1="16" x2="14" y2="32" opacity="0.4" />
+    </g>
   </svg>
 );
 

@@ -82,12 +82,12 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onNavigateToSettings })
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-black/40 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
                 <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.3)]">
                         <ImageIcon className="w-6 h-6 text-white" />
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-white font-heading tracking-tight">Image Generator</h1>
-                        <p className="text-sm text-gray-400">Visualize concepts, architectures, and attack flows.</p>
+                        <p className="text-sm text-gray-400">AI-powered visual creation studio.</p>
                     </div>
                 </div>
             </div>
@@ -104,7 +104,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onNavigateToSettings })
                             onKeyPress={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleGenerate())}
                             placeholder="Describe the image you want to generate... e.g., A futuristic cybersecurity dashboard displaying a network attack in neon colors."
                             disabled={isLoading}
-                            className="w-full flex-grow p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/20 transition-all resize-none text-sm leading-relaxed"
+                            className="w-full flex-grow p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all resize-none text-sm leading-relaxed"
                         />
                         <div className="absolute bottom-3 right-3 text-[10px] text-gray-600 font-mono">
                             {prompt.length} chars
@@ -117,7 +117,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onNavigateToSettings })
                             disabled={isLoading || !prompt}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-sm rounded-xl disabled:opacity-50 hover:shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center space-x-2"
+                            className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-sm rounded-xl disabled:opacity-50 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center space-x-2"
                         >
                             {isLoading ? <SpinnerIcon className="w-4 h-4 animate-spin" /> : <MagicWandIcon className="w-4 h-4" />}
                             <span>Generate Image</span>
@@ -152,7 +152,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onNavigateToSettings })
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.05 }}
-                                            className="w-full text-left text-xs text-gray-400 bg-white/5 border border-white/5 p-3 rounded-lg hover:bg-pink-500/10 hover:text-pink-300 hover:border-pink-500/30 transition-all"
+                                            className="w-full text-left text-xs text-gray-400 bg-white/5 border border-white/5 p-3 rounded-lg hover:bg-purple-500/10 hover:text-purple-300 hover:border-purple-500/30 transition-all"
                                         >
                                             <div className="flex items-start space-x-2">
                                                 <SparklesIcon className="w-3 h-3 mt-0.5 flex-shrink-0" />
@@ -168,10 +168,10 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onNavigateToSettings })
 
                 {/* Preview Panel */}
                 <div className="lg:col-span-8 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 flex flex-col shadow-2xl relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
 
                     <div className="flex items-center justify-between mb-4 relative z-10">
-                        <h2 className="text-xs font-bold font-heading text-gray-500 uppercase tracking-wider">Result Preview</h2>
+                        <h2 className="text-xs font-bold font-heading text-gray-500 uppercase tracking-wider">Generated Image</h2>
                         {imageUrl && !isLoading && (
                             <motion.a
                                 href={imageUrl}
@@ -186,15 +186,39 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onNavigateToSettings })
                         )}
                     </div>
 
-                    <div className="flex-grow flex items-center justify-center bg-black/20 rounded-2xl border border-white/5 overflow-hidden relative">
+                    <div className="flex-grow flex items-center justify-center bg-black rounded-2xl border border-white/5 overflow-hidden relative">
                         {isLoading && (
                             <div className="text-center z-10">
-                                <div className="relative w-20 h-20 mx-auto mb-6">
-                                    <div className="absolute inset-0 rounded-full border-2 border-pink-500/20 animate-ping" />
-                                    <div className="absolute inset-0 rounded-full border-2 border-t-pink-500 animate-spin" />
-                                    <div className="absolute inset-4 rounded-full bg-pink-500/20 blur-md animate-pulse" />
+                                <div className="relative w-24 h-24 mx-auto mb-6">
+                                    {/* Animated gradient ring */}
+                                    <motion.div
+                                        className="absolute inset-0 rounded-full border-2 border-transparent"
+                                        style={{ borderTopColor: '#a855f7', borderRightColor: '#a855f740' }}
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                    />
+                                    <motion.div
+                                        className="absolute inset-2 rounded-full border-2 border-transparent"
+                                        style={{ borderBottomColor: '#ec4899', borderLeftColor: '#ec489940' }}
+                                        animate={{ rotate: -360 }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                    />
+                                    {/* Center icon */}
+                                    <motion.div
+                                        className="absolute inset-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center"
+                                        animate={{ scale: [1, 1.1, 1] }}
+                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                    >
+                                        <MagicWandIcon className="w-8 h-8 text-purple-400" />
+                                    </motion.div>
                                 </div>
-                                <h3 className="text-lg font-bold text-white animate-pulse">Dreaming...</h3>
+                                <motion.h3
+                                    className="text-lg font-bold text-white"
+                                    animate={{ opacity: [1, 0.5, 1] }}
+                                    transition={{ duration: 1.5, repeat: Infinity }}
+                                >
+                                    Creating Vision...
+                                </motion.h3>
                                 <p className="mt-2 text-sm text-gray-500">Generating high-fidelity visuals</p>
                             </div>
                         )}
@@ -205,16 +229,17 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onNavigateToSettings })
                                 animate={{ opacity: 1, scale: 1 }}
                                 src={imageUrl}
                                 alt={prompt}
-                                className="max-w-full max-h-full object-contain shadow-2xl"
+                                className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
                             />
                         )}
 
                         {!isLoading && !imageUrl && (
-                            <div className="text-center opacity-30">
-                                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
+                            <div className="text-center opacity-40">
+                                <div className="w-24 h-24 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/10">
                                     <ImageIcon className="w-10 h-10 text-white" />
                                 </div>
-                                <p className="text-sm font-bold text-white uppercase tracking-wider">No Image Generated</p>
+                                <p className="text-sm font-medium text-white">Your creation will appear here</p>
+                                <p className="text-xs text-gray-500 mt-1">Enter a prompt and generate</p>
                             </div>
                         )}
                     </div>

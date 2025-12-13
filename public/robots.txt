@@ -1,0 +1,16 @@
+# Sitemap for Sentinel AI
+# https://sentinel-ai.app
+
+User-agent: *
+Allow: /
+
+# Disallow admin/internal paths (if any)
+Disallow: /api/
+Disallow: /_next/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://sentinel-ai.app/sitemap.xml
+
+# Crawl-delay (optional, be friendly to crawlers)
+Crawl-delay: 1
