@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useToast } from './ToastContext';
-import { BrainCircuitIcon, ErrorIcon, SettingsIcon, SpinnerIcon, GithubIcon, CodeIcon } from './icons';
+import { BrainCircuitIcon, ErrorIcon, SettingsIcon, SpinnerIcon, GithubIcon, CodeIcon, DoubleArrowRightIcon, DoubleArrowLeftIcon, CheckIcon, DocumentTextIcon } from './icons';
 import { isApiKeySet, refactorCode } from '../services/geminiService';
 import { createPullRequestForFix, getRepoFileTree, getFileContent, parseGitHubUrl } from '../services/githubService';
 import { RefactorResult, Repository, User, GitHubTreeItem } from '../types';
-
-// New imports for the redesigned component
-import { useTheme } from './ThemeContext';
 import CodeMirror, { EditorView, ViewUpdate } from '@uiw/react-codemirror';
 import { atomone } from '@uiw/codemirror-theme-atomone';
 import { javascript } from '@codemirror/lang-javascript';
@@ -31,7 +28,6 @@ const getCodeMirrorLanguage = (lang: string) => {
     if (['typescript', 'javascript', 'json'].includes(lang)) {
         return javascript({ jsx: true, typescript: true });
     }
-    // Fallback to javascript for any other language to ensure some highlighting
     return javascript({ jsx: true, typescript: true });
 };
 
@@ -48,17 +44,13 @@ function createLineDiffExtension(lineDiffs: Diff[], isOriginal: boolean) {
         constructor(view: EditorView) {
             this.decorations = this.buildDecorations(view);
         }
-        
-        // This is intentionally left empty. The extension is re-created via useMemo when diffs change,
-        // which is sufficient for this use case and simpler than handling dynamic updates.
-        update(update: ViewUpdate) {}
+
+        update(update: ViewUpdate) { }
 
         buildDecorations(view: EditorView): DecorationSet {
             const builder = new RangeSetBuilder<Decoration>();
             let lineNumber = 1;
             for (const [op, text] of lineDiffs) {
-                // diff-match-patch can return text without a trailing newline.
-                // This logic correctly counts the number of lines in the diff segment.
                 const numLines = text.endsWith('\n') ? text.split('\n').length - 1 : text.split('\n').length;
                 if (numLines === 0) continue;
 
@@ -66,14 +58,13 @@ function createLineDiffExtension(lineDiffs: Diff[], isOriginal: boolean) {
                     for (let i = 0; i < numLines; i++) {
                         const currentLine = lineNumber + i;
                         if (currentLine <= view.state.doc.lines) {
-                           const line = view.state.doc.line(currentLine);
-                           builder.add(line.from, line.from, deco);
+                            const line = view.state.doc.line(currentLine);
+                            builder.add(line.from, line.from, deco);
                         }
                     }
                 }
 
-                // Advance line counter for operations that exist in this view
-                if (op !== (isOriginal ? 1 : -1)) { // op is EQUAL or DELETE for original, EQUAL or INSERT for refactored
+                if (op !== (isOriginal ? 1 : -1)) {
                     lineNumber += numLines;
                 }
             }
@@ -99,7 +90,7 @@ const RefactorSimulator: React.FC<RefactorSimulatorProps> = ({ onNavigateToSetti
     const { addToast } = useToast();
     const [agentState, setAgentState] = useState<AgentState>('idle');
     const [apiKeyMissing, setApiKeyMissing] = useState(false);
-    
+
     const [selectedRepoFullName, setSelectedRepoFullName] = useState<string>('');
     const [fileTree, setFileTree] = useState<GitHubTreeItem[]>([]);
     const [selectedFile, setSelectedFile] = useState<GitHubTreeItem | null>(null);
@@ -108,7 +99,7 @@ const RefactorSimulator: React.FC<RefactorSimulatorProps> = ({ onNavigateToSetti
     const [originalFileSha, setOriginalFileSha] = useState('');
     const [refactorResult, setRefactorResult] = useState<RefactorResult | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>('side-by-side');
-    const { theme } = useTheme();
+    const [isFilePanelCollapsed, setIsFilePanelCollapsed] = useState(false);
 
     // Line-based diff calculation
     const lineDiffs = useMemo(() => {
@@ -119,13 +110,19 @@ const RefactorSimulator: React.FC<RefactorSimulatorProps> = ({ onNavigateToSetti
         dmp.diff_charsToLines_(diffs, a.lineArray);
         return diffs;
     }, [originalCode, refactorResult]);
-    
+
     // CodeMirror extensions
     const commonExtensions = useMemo(() => [
         EditorView.lineWrapping,
         EditorView.editable.of(false),
+        EditorView.theme({
+            "&": { backgroundColor: "transparent !important" },
+            ".cm-gutters": { backgroundColor: "transparent !important", borderRight: "1px solid rgba(255,255,255,0.1)" },
+            ".cm-line-delete": { backgroundColor: "rgba(239, 68, 68, 0.15) !important" },
+            ".cm-line-insert": { backgroundColor: "rgba(16, 185, 129, 0.15) !important" },
+        })
     ], []);
-    
+
     const originalExtensions = useMemo(() => [
         ...commonExtensions,
         getCodeMirrorLanguage(selectedFile ? getLanguageFromFile(selectedFile.path) : ''),
@@ -212,13 +209,13 @@ const RefactorSimulator: React.FC<RefactorSimulatorProps> = ({ onNavigateToSetti
 
             const commitMessage = `feat(refactor): Apply Sentinel AI refactor to ${selectedFile.path}`;
             const prTitle = `Sentinel AI Refactor: ${selectedFile.path}`;
-            
+
             const prUrl = await createPullRequestForFix(
                 parsed.owner, parsed.repo, selectedFile.path,
                 refactorResult.refactoredCode, originalFileSha,
                 commitMessage, prTitle
             );
-            
+
             addToast(
                 <span>PR created! <a href={prUrl} target="_blank" rel="noopener noreferrer" className="underline font-bold">View Pull Request</a></span>,
                 'success'
@@ -231,30 +228,40 @@ const RefactorSimulator: React.FC<RefactorSimulatorProps> = ({ onNavigateToSetti
             setAgentState('refactor_done');
         }
     };
-    
+
     const PromptMessage: React.FC<{ icon: React.ReactNode, title: string, message: string, buttonLabel?: string, onButtonClick?: () => void }> = ({ icon, title, message, buttonLabel, onButtonClick }) => (
-        <div className="h-full w-full flex items-center justify-center p-4 glass-effect rounded-lg">
+        <div className="h-full w-full flex items-center justify-center p-8 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl">
             <div className="text-center">
-                <div className="w-16 h-16 bg-brand-cyan/10 rounded-full flex items-center justify-center mx-auto mb-4">{icon}</div>
-                <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading">{title}</h3>
-                <p className="mt-2 text-medium-dark-text dark:text-medium-text max-w-sm">{message}</p>
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                    {icon}
+                </div>
+                <h3 className="text-xl font-bold text-white font-heading mb-2">{title}</h3>
+                <p className="text-gray-400 max-w-sm text-sm leading-relaxed mb-8">{message}</p>
                 {buttonLabel && onButtonClick && (
-                    <button onClick={onButtonClick} className="mt-6 flex items-center justify-center btn-primary mx-auto">
-                        <SettingsIcon className="w-5 h-5 mr-2" />
-                        {buttonLabel}
-                    </button>
+                    <motion.button
+                        onClick={onButtonClick}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-6 py-3 bg-white text-black font-bold text-sm rounded-full flex items-center space-x-2 mx-auto hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all"
+                    >
+                        <SettingsIcon className="w-4 h-4" />
+                        <span>{buttonLabel}</span>
+                    </motion.button>
                 )}
             </div>
         </div>
     );
 
     const ViewModeToggle = () => (
-        <div className="flex items-center space-x-1 bg-light-primary dark:bg-dark-primary p-1 rounded-lg">
+        <div className="flex items-center space-x-1 bg-black/40 p-1 rounded-lg border border-white/10">
             {(['side-by-side', 'original', 'refactored'] as ViewMode[]).map(mode => (
                 <button
                     key={mode}
                     onClick={() => setViewMode(mode)}
-                    className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${viewMode === mode ? 'bg-white dark:bg-dark-secondary text-dark-text dark:text-white' : 'text-medium-dark-text dark:text-medium-text hover:bg-gray-200 dark:hover:bg-white/5'}`}
+                    className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${viewMode === mode
+                        ? 'bg-white/10 text-white shadow-sm'
+                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                        }`}
                 >
                     {mode.replace('-', ' ')}
                 </button>
@@ -263,73 +270,111 @@ const RefactorSimulator: React.FC<RefactorSimulatorProps> = ({ onNavigateToSetti
     );
 
     if (apiKeyMissing) {
-        return <PromptMessage icon={<ErrorIcon className="w-8 h-8 text-yellow-500" />} title="Gemini API Key Required" message="Please set your API key in Settings to enable the refactor agent." buttonLabel="Go to Settings" onButtonClick={onNavigateToSettings} />;
+        return <PromptMessage icon={<ErrorIcon className="w-10 h-10 text-red-500" />} title="Gemini API Key Required" message="Please set your API key in Settings to enable the refactor agent." buttonLabel="Go to Settings" onButtonClick={onNavigateToSettings} />;
     }
     if (!user?.github) {
-        return <PromptMessage icon={<GithubIcon className="w-8 h-8 text-medium-dark-text dark:text-medium-text" />} title="GitHub Account Required" message="Please connect your GitHub account in Settings to use the Auto-Refactor Agent." buttonLabel="Go to Settings" onButtonClick={onNavigateToSettings} />;
+        return <PromptMessage icon={<GithubIcon className="w-10 h-10 text-gray-400" />} title="GitHub Account Required" message="Please connect your GitHub account in Settings to use the Auto-Refactor Agent." buttonLabel="Go to Settings" onButtonClick={onNavigateToSettings} />;
     }
 
     return (
         <div className="h-full w-full flex flex-col space-y-4 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-black/40 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
                 <div>
-                    <h1 className="text-3xl font-bold text-dark-text dark:text-white font-heading">Auto-Refactor Agent</h1>
-                    <p className="mt-1 text-medium-dark-text dark:text-medium-text">Select a repository and file to refactor, then create a pull request with one click.</p>
+                    <h1 className="text-2xl font-bold text-white font-heading tracking-tight flex items-center space-x-3">
+                        <BrainCircuitIcon className="w-6 h-6 text-purple-400" />
+                        <span>Auto-Refactor Agent</span>
+                    </h1>
+                    <p className="mt-2 text-sm text-gray-400 max-w-xl">Select a repository and file to refactor, then create a pull request with one click.</p>
                 </div>
                 {repos.length > 0 && (
-                    <select value={selectedRepoFullName} onChange={e => setSelectedRepoFullName(e.target.value)} className="mt-4 md:mt-0 w-full md:w-72 bg-light-secondary dark:bg-dark-secondary border border-gray-200 dark:border-white/10 rounded-lg p-2 text-sm">
-                        {repos.map(repo => <option key={repo.id} value={repo.full_name}>{repo.full_name}</option>)}
-                    </select>
+                    <div className="mt-4 md:mt-0 relative">
+                        <select
+                            value={selectedRepoFullName}
+                            onChange={e => setSelectedRepoFullName(e.target.value)}
+                            className="w-full md:w-72 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all appearance-none cursor-pointer font-mono"
+                        >
+                            {repos.map(repo => <option key={repo.id} value={repo.full_name}>{repo.full_name}</option>)}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <DoubleArrowRightIcon className="w-3 h-3 text-gray-500 rotate-90" />
+                        </div>
+                    </div>
                 )}
             </div>
 
             <div className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
-                <div className="lg:col-span-3 glass-effect rounded-lg p-4 flex flex-col">
-                    <h2 className="text-lg font-bold font-heading mb-3 text-dark-text dark:text-white flex-shrink-0">File Explorer</h2>
-                    <div className="flex-grow overflow-y-auto border-t border-gray-200 dark:border-white/10 pt-2 -mx-4 px-4">
-                        {agentState === 'loading_files' && <div className="flex justify-center pt-8"><SpinnerIcon className="w-6 h-6" /></div>}
+                {/* File Explorer */}
+                <motion.div
+                    initial={false}
+                    animate={{ width: isFilePanelCollapsed ? 'auto' : '100%' }}
+                    className={`lg:col-span-3 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 flex flex-col overflow-hidden shadow-2xl transition-all duration-300 ${isFilePanelCollapsed ? 'lg:col-span-1' : 'lg:col-span-3'}`}
+                >
+                    <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                        {!isFilePanelCollapsed && <h2 className="text-xs font-bold font-heading text-gray-500 uppercase tracking-wider">File Explorer</h2>}
+                        <button onClick={() => setIsFilePanelCollapsed(!isFilePanelCollapsed)} className="p-2 rounded-lg hover:bg-white/5 text-gray-500 hover:text-white transition-colors ml-auto">
+                            {isFilePanelCollapsed ? <DoubleArrowRightIcon className="w-4 h-4" /> : <DoubleArrowLeftIcon className="w-4 h-4" />}
+                        </button>
+                    </div>
+
+                    <div className="flex-grow overflow-y-auto p-2 custom-scrollbar">
+                        {agentState === 'loading_files' && <div className="flex justify-center pt-8"><SpinnerIcon className="w-6 h-6 text-purple-400 animate-spin" /></div>}
                         {agentState !== 'loading_files' && fileTree.length > 0 && (
                             <ul className="space-y-1">
                                 {fileTree.map(file => (
                                     <li key={file.path}>
-                                        <button onClick={() => handleFileSelect(file)} disabled={['refactoring', 'creating_pr', 'loading_files'].includes(agentState)} className={`w-full flex items-center space-x-2 p-2 rounded-md text-left transition-colors text-sm disabled:opacity-50 ${selectedFile?.path === file.path ? 'bg-brand-purple/20' : 'hover:bg-gray-200 dark:hover:bg-white/5'}`}>
-                                            <CodeIcon className="w-4 h-4 flex-shrink-0" />
-                                            <span className="truncate">{file.path}</span>
-                                        </button>
+                                        <motion.button
+                                            onClick={() => handleFileSelect(file)}
+                                            disabled={['refactoring', 'creating_pr', 'loading_files'].includes(agentState)}
+                                            whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                                            className={`w-full flex items-center space-x-3 p-2.5 rounded-lg text-left transition-all text-xs disabled:opacity-50 group ${selectedFile?.path === file.path
+                                                ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20'
+                                                : 'text-gray-400 border border-transparent'
+                                                }`}
+                                        >
+                                            <CodeIcon className={`w-4 h-4 flex-shrink-0 ${selectedFile?.path === file.path ? 'text-purple-400' : 'text-gray-600 group-hover:text-gray-400'}`} />
+                                            {!isFilePanelCollapsed && <span className="truncate font-mono">{file.path}</span>}
+                                        </motion.button>
                                     </li>
                                 ))}
                             </ul>
                         )}
-                        {agentState === 'idle' && fileTree.length === 0 && <p className="text-center text-sm text-medium-dark-text dark:text-medium-text pt-4">No scannable files found.</p>}
+                        {agentState === 'idle' && fileTree.length === 0 && <p className="text-center text-xs text-gray-500 pt-8">No scannable files found.</p>}
                     </div>
-                </div>
+                </motion.div>
 
-                <div className="lg:col-span-6 flex flex-col gap-4">
-                     <div className="flex-shrink-0 flex flex-wrap gap-2 items-center justify-between">
-                        <h2 className="text-lg font-bold font-heading text-dark-text dark:text-white">Code Preview</h2>
+                {/* Main Content */}
+                <div className={`${isFilePanelCollapsed ? 'lg:col-span-11' : 'lg:col-span-9'} flex flex-col gap-4`}>
+                    {/* Toolbar */}
+                    <div className="flex-shrink-0 flex flex-wrap gap-4 items-center justify-between bg-black/40 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-lg">
+                        <div className="flex items-center space-x-3">
+                            <h2 className="text-sm font-bold font-heading text-white uppercase tracking-wider">Code Preview</h2>
+                            {selectedFile && <span className="text-xs text-gray-500 font-mono px-2 py-1 bg-white/5 rounded-md">{selectedFile.path}</span>}
+                        </div>
+
                         <div className="flex items-center gap-4">
-                             {refactorResult && <ViewModeToggle />}
-                              <AnimatePresence mode="wait">
+                            {refactorResult && <ViewModeToggle />}
+                            <AnimatePresence mode="wait">
                                 {agentState === 'file_selected' && (
-                                    <motion.div key="run-button" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                        <button onClick={handleRefactor} className="btn-primary py-2 px-4 flex items-center justify-center">
-                                            <BrainCircuitIcon className="w-5 h-5 mr-2" />
+                                    <motion.div key="run-button" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+                                        <button onClick={handleRefactor} className="px-5 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-xl hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center space-x-2">
+                                            <BrainCircuitIcon className="w-4 h-4" />
                                             <span>Run Refactor</span>
                                         </button>
                                     </motion.div>
                                 )}
                                 {agentState === 'refactor_done' && (
-                                    <motion.div key="pr-button" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                        <button onClick={handleCreatePR} className="btn-primary flex items-center justify-center space-x-2 py-2 px-4">
-                                            <GithubIcon className="w-5 h-5" />
+                                    <motion.div key="pr-button" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+                                        <button onClick={handleCreatePR} className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold rounded-xl hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all flex items-center space-x-2">
+                                            <GithubIcon className="w-4 h-4" />
                                             <span>Create PR</span>
                                         </button>
                                     </motion.div>
                                 )}
                                 {(agentState === 'creating_pr' || agentState === 'refactoring') && (
-                                    <motion.div key="loading-state" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                        <button disabled className="btn-primary py-2 px-4 flex items-center justify-center opacity-70 cursor-not-allowed">
-                                            <SpinnerIcon className="w-5 h-5 mr-2" />
+                                    <motion.div key="loading-state" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+                                        <button disabled className="px-5 py-2 bg-white/10 text-white text-xs font-bold rounded-xl cursor-not-allowed flex items-center space-x-2">
+                                            <SpinnerIcon className="w-4 h-4 animate-spin" />
                                             <span>{agentState === 'creating_pr' ? 'Creating...' : 'Refactoring...'}</span>
                                         </button>
                                     </motion.div>
@@ -337,80 +382,122 @@ const RefactorSimulator: React.FC<RefactorSimulatorProps> = ({ onNavigateToSetti
                             </AnimatePresence>
                         </div>
                     </div>
-                    <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0 relative">
-                       <AnimatePresence>
-                         {(viewMode === 'side-by-side' || viewMode === 'original') && (
-                            <motion.div
-                                key="original" layout
-                                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
-                                transition={{ duration: 0.3, ease: 'easeIn' }}
-                                className={viewMode === 'side-by-side' ? 'col-span-1' : 'col-span-1 md:col-span-2'}
-                            >
-                                <CodeMirror value={originalCode} extensions={originalExtensions} theme={theme === 'dark' ? atomone : 'light'} readOnly={true} />
-                            </motion.div>
-                         )}
-                         {(viewMode === 'side-by-side' || viewMode === 'refactored') && refactorResult && (
-                             <motion.div
-                                key="refactored" layout
-                                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-                                transition={{ duration: 0.3, ease: 'easeIn' }}
-                                className={viewMode === 'side-by-side' ? 'col-span-1' : 'col-span-1 md:col-span-2'}
-                            >
-                                <CodeMirror value={refactorResult.refactoredCode} extensions={refactoredExtensions} theme={theme === 'dark' ? atomone : 'light'} readOnly={true} />
-                            </motion.div>
-                         )}
-                       </AnimatePresence>
-                       {(agentState === 'loading_files' || agentState === 'refactoring') && (
-                           <div className="absolute inset-0 bg-light-secondary/50 dark:bg-dark-secondary/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
-                               <SpinnerIcon className="w-8 h-8 text-brand-purple" />
-                           </div>
-                       )}
-                       {!originalCode && agentState !== 'loading_files' && (
-                           <div className="absolute inset-0 flex items-center justify-center text-center text-medium-dark-text dark:text-medium-text">
-                               <p>Select a file to begin.</p>
-                           </div>
-                       )}
-                    </div>
-                </div>
 
-                <div className="lg:col-span-3 glass-effect rounded-lg p-4 flex flex-col">
-                    <h2 className="text-lg font-bold font-heading mb-3 text-dark-text dark:text-white flex-shrink-0">Action Panel</h2>
+                    <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0">
+                        {/* Editor Area */}
+                        <div className="lg:col-span-2 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl relative flex flex-col">
+                            <div className="flex-grow overflow-hidden relative custom-scrollbar">
+                                <AnimatePresence>
+                                    {(viewMode === 'side-by-side' || viewMode === 'original') && (
+                                        <motion.div
+                                            key="original" layout
+                                            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
+                                            transition={{ duration: 0.3, ease: 'easeIn' }}
+                                            className={`h-full overflow-auto ${viewMode === 'side-by-side' ? 'w-1/2 float-left border-r border-white/5' : 'w-full'}`}
+                                        >
+                                            <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm border-b border-white/5 px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Original</div>
+                                            <CodeMirror value={originalCode} extensions={originalExtensions} theme={atomone} readOnly={true} className="text-xs" height="100%" />
+                                        </motion.div>
+                                    )}
+                                    {(viewMode === 'side-by-side' || viewMode === 'refactored') && refactorResult && (
+                                        <motion.div
+                                            key="refactored" layout
+                                            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+                                            transition={{ duration: 0.3, ease: 'easeIn' }}
+                                            className={`h-full overflow-auto ${viewMode === 'side-by-side' ? 'w-1/2 float-left' : 'w-full'}`}
+                                        >
+                                            <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm border-b border-white/5 px-4 py-2 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Refactored</div>
+                                            <CodeMirror value={refactorResult.refactoredCode} extensions={refactoredExtensions} theme={atomone} readOnly={true} className="text-xs" height="100%" />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
 
-                    <div className="flex-grow overflow-y-auto border-t border-gray-200 dark:border-white/10 pt-3">
-                        <AnimatePresence mode="wait">
-                            {agentState === 'refactor_done' && refactorResult ? (
-                                <motion.div
-                                    key="results"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-2"
-                                >
-                                    <h3 className="font-bold text-dark-text dark:text-white">Improvements Made:</h3>
-                                    <ul className="list-disc pl-5 space-y-1 text-sm text-medium-dark-text dark:text-medium-text">
-                                        {refactorResult.improvements.map((item, i) => <li key={i}>{item}</li>)}
-                                    </ul>
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="placeholder"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="flex items-center justify-center h-full text-center"
-                                >
-                                    <p className="text-sm text-medium-dark-text dark:text-medium-text px-4">
-                                        {agentState === 'refactoring'
-                                            ? 'AI is analyzing and refactoring the code...'
-                                            : agentState === 'file_selected'
-                                                ? 'The AI will analyze the selected file for potential improvements in security, performance, and readability.'
-                                                : 'Select a file from the explorer to begin the refactoring process.'
-                                        }
-                                    </p>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                {(agentState === 'loading_files' || agentState === 'refactoring') && (
+                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
+                                        <div className="flex flex-col items-center space-y-4">
+                                            <SpinnerIcon className="w-10 h-10 text-purple-500 animate-spin" />
+                                            <p className="text-sm font-bold text-white tracking-wider animate-pulse">{agentState === 'loading_files' ? 'LOADING FILE...' : 'AI REFACTORING...'}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!originalCode && agentState !== 'loading_files' && (
+                                    <div className="absolute inset-0 flex items-center justify-center text-center p-8">
+                                        <div className="max-w-xs">
+                                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                <DocumentTextIcon className="w-8 h-8 text-gray-600" />
+                                            </div>
+                                            <p className="text-gray-500 text-sm">Select a file from the explorer to begin.</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Action Panel / Results */}
+                        <div className="lg:col-span-1 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl flex flex-col">
+                            <div className="p-4 border-b border-white/5">
+                                <h2 className="text-xs font-bold font-heading text-gray-500 uppercase tracking-wider">Analysis Results</h2>
+                            </div>
+
+                            <div className="flex-grow overflow-y-auto p-4 custom-scrollbar">
+                                <AnimatePresence mode="wait">
+                                    {agentState === 'refactor_done' && refactorResult ? (
+                                        <motion.div
+                                            key="results"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="space-y-4"
+                                        >
+                                            <div className="flex items-center space-x-2 text-emerald-400 mb-2">
+                                                <CheckIcon className="w-4 h-4" />
+                                                <span className="text-sm font-bold">Refactor Complete</span>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <h3 className="text-xs font-bold text-white uppercase tracking-wider">Improvements</h3>
+                                                <ul className="space-y-2">
+                                                    {refactorResult.improvements.map((item, i) => (
+                                                        <li key={i} className="flex items-start space-x-2 text-xs text-gray-300 bg-white/5 p-2 rounded-lg border border-white/5">
+                                                            <span className="block w-1.5 h-1.5 mt-1.5 rounded-full bg-purple-500 flex-shrink-0" />
+                                                            <span className="leading-relaxed">{item}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            key="placeholder"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex flex-col items-center justify-center h-full text-center p-4"
+                                        >
+                                            {agentState === 'refactoring' ? (
+                                                <>
+                                                    <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-4 animate-pulse">
+                                                        <BrainCircuitIcon className="w-6 h-6 text-purple-500" />
+                                                    </div>
+                                                    <p className="text-xs text-gray-400">AI is analyzing and refactoring the code...</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p className="text-xs text-gray-500 leading-relaxed">
+                                                        {agentState === 'file_selected'
+                                                            ? 'Ready to analyze. Click "Run Refactor" to let the AI improve security, performance, and readability.'
+                                                            : 'Select a file to see AI-powered refactoring suggestions here.'
+                                                        }
+                                                    </p>
+                                                </>
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

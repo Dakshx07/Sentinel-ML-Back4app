@@ -20,15 +20,15 @@ interface RightPanelProps {
 
 const SeverityBadge: React.FC<{ severity: string; count: number }> = ({ severity, count }) => {
   const colorClasses: { [key: string]: string } = {
-    Critical: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/50',
-    High: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/50',
-    Medium: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-400/20 dark:text-yellow-300 dark:border-yellow-400/50',
-    Low: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-400/20 dark:text-blue-300 dark:border-blue-400/50',
+    Critical: 'bg-red-500/20 text-red-400 border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]',
+    High: 'bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]',
+    Medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.2)]',
+    Low: 'bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]',
   };
   return (
-    <div className={`flex items-center space-x-2 px-3 py-1 border rounded-full text-sm ${colorClasses[severity]}`}>
-      <span className="font-semibold">{severity}</span>
-      <span className="font-mono text-xs bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded-full">{count}</span>
+    <div className={`flex items-center space-x-2 px-3 py-1 border rounded-full text-xs font-medium backdrop-blur-sm ${colorClasses[severity]}`}>
+      <span className="uppercase tracking-wider">{severity}</span>
+      <span className="font-mono bg-black/30 px-1.5 py-0.5 rounded-full text-[10px]">{count}</span>
     </div>
   );
 };
@@ -46,51 +46,51 @@ const IssueCard: React.FC<{
 }> = ({ issue, isSelected, onSelect, onApplyFix, isFixApplied, onCommitFix, onRevertFix, isCommitting, hasActiveFix }) => {
   const isInvalidLine = issue.line === -1;
   return (
-    <div className={`border rounded-lg transition-all duration-300 ${isSelected ? 'bg-brand-purple/10 border-brand-purple' : 'bg-light-secondary dark:bg-dark-primary border-gray-200 dark:border-white/10'}`}>
-      <button onClick={onSelect} className="w-full p-3 text-left">
+    <div className={`border rounded-xl transition-all duration-300 overflow-hidden ${isSelected ? 'bg-white/5 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.1)]' : 'bg-transparent border-white/5 hover:bg-white/5 hover:border-white/10'}`}>
+      <button onClick={onSelect} className="w-full p-4 text-left">
         <div className="flex items-start space-x-3">
-          <ShieldIcon severity={issue.severity} className="w-6 h-6 flex-shrink-0 mt-1" />
+          <ShieldIcon severity={issue.severity} className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div className="flex-grow min-w-0">
-            <p className="font-semibold text-dark-text dark:text-white truncate">{issue.title}</p>
-            <div className="text-xs text-medium-dark-text dark:text-medium-text mt-1 flex items-center flex-wrap gap-x-2 gap-y-1">
+            <p className="font-bold text-white text-sm truncate font-heading">{issue.title}</p>
+            <div className="text-xs text-gray-500 mt-1.5 flex items-center flex-wrap gap-x-2 gap-y-1">
               {issue.filePath && (
-                <span className="font-mono bg-gray-200 dark:bg-black/20 px-1.5 py-0.5 rounded truncate inline-block max-w-full" title={issue.filePath}>
+                <span className="font-mono bg-white/5 px-1.5 py-0.5 rounded truncate inline-block max-w-full border border-white/5" title={issue.filePath}>
                   {issue.filePath}
                 </span>
               )}
-              <span className="flex-shrink-0 whitespace-nowrap">
+              <span className="flex-shrink-0 whitespace-nowrap font-mono">
                 {isInvalidLine ? (
-                  <span className="text-yellow-500 dark:text-yellow-400 font-semibold">Invalid Line</span>
+                  <span className="text-yellow-400 font-semibold">Invalid Line</span>
                 ) : (
                   `Line ${issue.line}`
                 )} &bull; {issue.severity}
               </span>
             </div>
           </div>
-          <ChevronDownIcon className={`w-5 h-5 text-medium-dark-text dark:text-medium-text flex-shrink-0 transition-transform duration-300 ${isSelected ? 'rotate-180' : ''}`} />
+          <ChevronDownIcon className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-300 ${isSelected ? 'rotate-180' : ''}`} />
         </div>
       </button>
       {isSelected && (
-        <div className="mt-2 px-4 pb-4 border-t border-gray-200 dark:border-white/10 space-y-3 text-sm text-medium-dark-text dark:text-medium-text animate-fade-in">
+        <div className="px-4 pb-4 border-t border-white/5 space-y-3 text-sm text-gray-400 animate-fade-in bg-black/20">
           <div className="pt-3">
-            <p><span className="font-semibold text-dark-text dark:text-white">Description:</span> {issue.description}</p>
+            <p><span className="font-bold text-gray-300 text-xs uppercase tracking-wider">Description</span><br />{issue.description}</p>
           </div>
           <div>
-            <p><span className="font-semibold text-dark-text dark:text-white">Impact:</span> {issue.impact}</p>
+            <p><span className="font-bold text-gray-300 text-xs uppercase tracking-wider">Impact</span><br />{issue.impact}</p>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             {isFixApplied ? (
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); onCommitFix(); }}
-                  className="btn-primary text-xs py-1 px-3 disabled:opacity-50"
+                  className="bg-green-500 text-black font-bold text-xs py-2 px-4 rounded-lg hover:bg-green-400 transition-colors disabled:opacity-50 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
                   disabled={isCommitting}
                 >
                   {isCommitting ? 'Creating PR...' : 'Push Fix & Create PR'}
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); onRevertFix(); }}
-                  className="bg-gray-200 dark:bg-white/10 text-dark-text dark:text-white font-semibold text-xs py-1 px-3 rounded-md transition-colors hover:bg-gray-300 dark:hover:bg-white/20 disabled:opacity-50"
+                  className="bg-white/10 text-white font-semibold text-xs py-2 px-4 rounded-lg transition-colors hover:bg-white/20 disabled:opacity-50"
                   disabled={isCommitting}
                 >
                   Revert
@@ -99,7 +99,7 @@ const IssueCard: React.FC<{
             ) : (
               <button
                 onClick={(e) => { e.stopPropagation(); onApplyFix(); }}
-                className="btn-primary text-xs py-1 px-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-blue-600 text-white font-bold text-xs py-2 px-4 rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(37,99,235,0.3)] flex items-center"
                 disabled={isInvalidLine || hasActiveFix}
                 title={hasActiveFix ? "Another fix is active. Please commit or revert it first." : ""}
               >
@@ -123,18 +123,18 @@ const RightPanel: React.FC<RightPanelProps> = ({ issues, isLoading, selectedIssu
   const renderContent = () => {
     if (isApiKeyMissing) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-center p-4">
-          <ErrorIcon className="w-12 h-12 text-yellow-500 mb-4" />
-          <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading">Gemini API Key Required</h3>
-          <p className="mt-2 text-medium-dark-text dark:text-medium-text max-w-sm">
+        <div className="flex flex-col items-center justify-center h-full text-center p-6">
+          <ErrorIcon className="w-12 h-12 text-yellow-500 mb-4 animate-pulse" />
+          <h3 className="text-lg font-bold text-white font-heading">Gemini API Key Required</h3>
+          <p className="mt-2 text-gray-400 max-w-sm text-sm">
             Please set your API key in the AI Agent Settings to enable code analysis.
           </p>
           {onNavigateToSettings && (
             <button
               onClick={onNavigateToSettings}
-              className="mt-6 flex items-center justify-center btn-primary"
+              className="mt-6 flex items-center justify-center px-6 py-2.5 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform text-sm"
             >
-              <SettingsIcon className="w-5 h-5 mr-2" />
+              <SettingsIcon className="w-4 h-4 mr-2" />
               Go to Settings
             </button>
           )}
@@ -153,18 +153,23 @@ const RightPanel: React.FC<RightPanelProps> = ({ issues, isLoading, selectedIssu
     }
 
     if (issues.length === 0) {
-      return <div className="flex items-center justify-center h-full text-medium-dark-text dark:text-medium-text"><p>No issues found. Clean code!</p></div>;
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-gray-500">
+          <ShieldIcon className="w-12 h-12 mb-4 opacity-20" />
+          <p className="font-medium">No issues found. Clean code!</p>
+        </div>
+      );
     }
 
     return (
       <>
-        <div className="p-4 border-b border-gray-200 dark:border-white/10">
-          <h3 className="text-lg font-bold text-dark-text dark:text-light-text font-heading mb-3">Sentinel Review</h3>
+        <div className="p-4 border-b border-white/5 bg-black/20">
+          <h3 className="text-sm font-bold text-white font-heading mb-3 uppercase tracking-wider">Security Report</h3>
           <div className="flex flex-wrap gap-2">
             {severities.map(s => issueCounts[s] > 0 && <SeverityBadge key={s} severity={s} count={issueCounts[s]} />)}
           </div>
         </div>
-        <div className="flex-grow p-4 space-y-3 overflow-y-auto">
+        <div className="flex-grow p-4 space-y-3 overflow-y-auto custom-scrollbar">
           {issues.sort((a, b) => severities.indexOf(a.severity) - severities.indexOf(b.severity)).map((issue, index) => {
             const issueId = `${issue.filePath}-${issue.line}-${issue.title}`;
             const appliedIssueId = appliedIssue ? `${appliedIssue.filePath}-${appliedIssue.line}-${appliedIssue.title}` : null;
@@ -189,7 +194,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ issues, isLoading, selectedIssu
   };
 
   return (
-    <div className="bg-light-secondary dark:bg-dark-secondary border-l border-gray-200 dark:border-white/10 flex flex-col h-full">
+    <div className="bg-transparent flex flex-col h-full">
       {renderContent()}
     </div>
   );

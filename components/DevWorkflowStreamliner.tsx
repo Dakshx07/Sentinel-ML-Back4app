@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Repository, User } from '../types';
 import { useToast } from './ToastContext';
-import { CpuChipIcon, SpinnerIcon, ErrorIcon, SettingsIcon, VolumeUpIcon } from './icons';
+import { CpuChipIcon, SpinnerIcon, ErrorIcon, SettingsIcon, VolumeUpIcon, SendIcon, DownloadIcon, UserIcon, RobotIcon, SparklesIcon } from './icons';
 import { getRepoFileTree, getFileContent, parseGitHubUrl } from '../services/githubService';
 import { queryRepoInsights, isApiKeySet, generateSpeech } from '../services/geminiService';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
-// Declare jsPDF and html2canvas on the global window object to resolve TypeScript errors.
 declare global {
     interface Window {
         jspdf: any;
@@ -25,48 +26,46 @@ interface Message {
     text: string;
 }
 
-// --- START: Audio Utilities for TTS ---
 function decode(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
 }
 
 async function decodeAudioData(
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number,
+    data: Uint8Array,
+    ctx: AudioContext,
+    sampleRate: number,
+    numChannels: number,
 ): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+    const dataInt16 = new Int16Array(data.buffer);
+    const frameCount = dataInt16.length / numChannels;
+    const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
 
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+    for (let channel = 0; channel < numChannels; channel++) {
+        const channelData = buffer.getChannelData(channel);
+        for (let i = 0; i < frameCount; i++) {
+            channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+        }
     }
-  }
-  return buffer;
+    return buffer;
 }
-// --- END: Audio Utilities for TTS ---
 
 
 const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, user, onNavigateToSettings }) => {
     const { addToast } = useToast();
+    const navigate = useNavigate();
     const [selectedRepoFullName, setSelectedRepoFullName] = useState<string>('');
     const [query, setQuery] = useState('');
     const [conversation, setConversation] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [apiKeyMissing, setApiKeyMissing] = useState(false);
     const chatContainerRef = useRef<HTMLDivElement>(null);
-    
-    // TTS State
+
     const audioContextRef = useRef<AudioContext | null>(null);
     const [activeAudio, setActiveAudio] = useState<{ messageId: number; source: AudioBufferSourceNode } | null>(null);
     const [loadingAudioId, setLoadingAudioId] = useState<number | null>(null);
@@ -76,11 +75,9 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
             setSelectedRepoFullName(repos[0].full_name);
         }
     }, [repos, selectedRepoFullName]);
-    
+
     useEffect(() => {
         setApiKeyMissing(!isApiKeySet());
-        // Initialize AudioContext. It's safe to create it on mount.
-        // It will be suspended until user interaction triggers audio playback.
         try {
             audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
         } catch (e) {
@@ -127,7 +124,7 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
 
             const fileTree = await getRepoFileTree(parsed.owner, parsed.repo);
             const filesToFetch = fileTree
-                .sort((a,b) => (a.size || 0) - (b.size || 0))
+                .sort((a, b) => (a.size || 0) - (b.size || 0))
                 .slice(0, 5);
 
             const fileContents = await Promise.all(
@@ -143,20 +140,19 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
 
         } catch (error: any) {
             addToast(error.message || 'An error occurred.', 'error');
-            setConversation(conversation); // Revert conversation on error
+            setConversation(conversation);
         } finally {
             setIsLoading(false);
         }
     };
-    
+
     const handlePlayAudio = async (message: Message) => {
         const audioContext = audioContextRef.current;
         if (!audioContext) {
             addToast('Audio playback is not supported on this browser.', 'error');
             return;
         }
-        
-        // Resume context if it's suspended
+
         if (audioContext.state === 'suspended') {
             audioContext.resume();
         }
@@ -170,12 +166,12 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
         if (activeAudio) {
             activeAudio.source.stop();
         }
-        
+
         setLoadingAudioId(message.id);
         try {
             const base64Audio = await generateSpeech(message.text);
             const audioBuffer = await decodeAudioData(decode(base64Audio), audioContext, 24000, 1);
-            
+
             const source = audioContext.createBufferSource();
             source.buffer = audioBuffer;
             source.connect(audioContext.destination);
@@ -190,27 +186,27 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
             setLoadingAudioId(null);
         }
     };
-    
+
     const handleExportPdf = async () => {
         if (!window.jspdf || !window.html2canvas) {
             addToast('PDF generation library is still loading. Please try again in a moment.', 'info');
             return;
         }
-        
+
         const { jsPDF } = window.jspdf;
         const chatElement = chatContainerRef.current;
         if (!chatElement || conversation.length === 0) {
             addToast('Nothing to export.', 'warning');
             return;
         }
-        
+
         addToast('Generating PDF...', 'info');
-        
+
         try {
             const canvas = await window.html2canvas(chatElement, {
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#0A0A1F' : '#F3F4F6',
+                backgroundColor: '#000000',
                 scale: 2,
-                scrollY: -window.scrollY, // Ensure it captures from the top
+                scrollY: -window.scrollY,
                 windowWidth: chatElement.scrollWidth,
                 windowHeight: chatElement.scrollHeight
             });
@@ -219,10 +215,10 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            
+
             const imgProps = pdf.getImageProperties(imgData);
             const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-            
+
             let heightLeft = imgHeight;
             let position = 0;
 
@@ -235,7 +231,7 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
                 pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
                 heightLeft -= pdfHeight;
             }
-            
+
             pdf.save(`sentinel-chatbot-${new Date().toISOString().split('T')[0]}.pdf`);
             addToast('PDF exported successfully!', 'success');
         } catch (error) {
@@ -246,77 +242,138 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
 
     if (apiKeyMissing) {
         return (
-            <div className="h-full w-full flex items-center justify-center p-4 glass-effect rounded-lg">
+            <div className="h-full w-full flex items-center justify-center p-8 bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl">
                 <div className="text-center">
-                     <ErrorIcon className="w-12 h-12 text-yellow-500 mb-4 mx-auto" />
-                     <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading">Gemini API Key Required</h3>
-                     <p className="mt-2 text-medium-dark-text dark:text-medium-text max-w-sm">Please set your API key in Settings to use this feature.</p>
-                     <button onClick={onNavigateToSettings} className="mt-6 flex items-center justify-center btn-primary mx-auto">
-                        <SettingsIcon className="w-5 h-5 mr-2" />
-                        Go to Settings
-                    </button>
+                    <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                        <ErrorIcon className="w-10 h-10 text-red-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 font-heading">API Key Required</h3>
+                    <p className="text-gray-400 max-w-sm text-sm leading-relaxed mb-8">Please set your Gemini API key in Settings to use this feature.</p>
+                    <motion.button
+                        onClick={() => navigate('/app/settings')}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-6 py-3 bg-white text-black font-bold text-sm rounded-full flex items-center space-x-2 mx-auto hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all"
+                    >
+                        <SettingsIcon className="w-4 h-4" />
+                        <span>Configure Access</span>
+                    </motion.button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="h-full w-full flex flex-col space-y-6 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                 <div className="flex items-center space-x-3">
-                    <CpuChipIcon className="w-8 h-8 text-brand-purple" />
+        <div className="h-full w-full flex flex-col space-y-4 animate-fade-in-up">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-black/40 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
+                <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-violet-500 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                        <SparklesIcon className="w-6 h-6 text-white" />
+                    </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-dark-text dark:text-white font-heading">Repo Chatbot</h1>
-                        <p className="mt-1 text-medium-dark-text dark:text-medium-text">AI-powered assistant for your repositories.</p>
+                        <h1 className="text-2xl font-bold text-white font-heading tracking-tight">AURA</h1>
+                        <p className="text-sm text-gray-400">AI-powered Universal Repository Assistant.</p>
                     </div>
                 </div>
                 <div className="flex items-center space-x-3 mt-4 md:mt-0">
-                     {repos.length > 0 && (
+                    {repos.length > 0 && (
                         <select
                             value={selectedRepoFullName}
                             onChange={e => setSelectedRepoFullName(e.target.value)}
-                            className="w-full md:w-60 bg-light-secondary dark:bg-dark-secondary border border-gray-200 dark:border-white/10 rounded-lg p-2 text-sm"
+                            className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none cursor-pointer font-mono"
                         >
                             {repos.map(repo => <option key={repo.id} value={repo.full_name}>{repo.full_name}</option>)}
                         </select>
                     )}
-                    <button onClick={handleExportPdf} className="btn-secondary py-2 px-4" disabled={conversation.length === 0}>Export PDF</button>
+                    <motion.button
+                        onClick={handleExportPdf}
+                        disabled={conversation.length === 0}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-3 bg-white/5 text-gray-400 hover:text-white border border-white/10 rounded-xl hover:bg-white/10 transition-all disabled:opacity-50"
+                        title="Export PDF"
+                    >
+                        <DownloadIcon className="w-5 h-5" />
+                    </motion.button>
                 </div>
             </div>
-            
-            <div ref={chatContainerRef} className="flex-grow glass-effect rounded-lg p-4 space-y-4 overflow-y-auto">
-                {conversation.map((msg) => (
-                    <div key={msg.id} className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}>
-                        {msg.sender === 'ai' && <div className="w-8 h-8 rounded-full bg-brand-purple flex items-center justify-center flex-shrink-0">🤖</div>}
-                        <div className={`relative group max-w-xl p-3 rounded-lg ${msg.sender === 'user' ? 'bg-brand-cyan/20' : 'bg-light-primary dark:bg-dark-primary'}`}>
-                           <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                           {msg.sender === 'ai' && (
-                               <button 
-                                   onClick={() => handlePlayAudio(msg)} 
-                                   className="absolute -bottom-3 -right-3 p-1.5 rounded-full bg-light-secondary dark:bg-dark-secondary border border-gray-200 dark:border-white/10 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                                   title="Read aloud"
-                                   disabled={loadingAudioId !== null && loadingAudioId !== msg.id}
-                                >
-                                   {loadingAudioId === msg.id 
-                                       ? <SpinnerIcon className="w-4 h-4" />
-                                       : <VolumeUpIcon className={`w-4 h-4 ${activeAudio?.messageId === msg.id ? 'text-brand-cyan' : ''}`} />
-                                   }
-                               </button>
-                           )}
+
+            {/* Chat Container */}
+            <div ref={chatContainerRef} className="flex-grow bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 space-y-6 overflow-y-auto custom-scrollbar shadow-inner">
+                {conversation.length === 0 && (
+                    <div className="flex flex-col items-center justify-center h-full text-center opacity-50">
+                        <div className="w-24 h-24 bg-gradient-to-br from-blue-500/20 to-violet-500/20 rounded-full flex items-center justify-center mb-6 blur-xl absolute" />
+                        <div className="relative z-10">
+                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
+                                <RobotIcon className="w-10 h-10 text-gray-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white font-heading mb-2">Start a Conversation</h3>
+                            <p className="text-sm text-gray-500 max-w-sm mx-auto">Ask questions about your repository's code, architecture, or best practices.</p>
                         </div>
-                         {msg.sender === 'user' && <img src={user?.avatarUrl} alt="user" className="w-8 h-8 rounded-full flex-shrink-0"/>}
                     </div>
-                ))}
-                 {isLoading && (
-                     <div className="flex items-start gap-3">
-                         <div className="w-8 h-8 rounded-full bg-brand-purple flex items-center justify-center flex-shrink-0"><SpinnerIcon className="w-5 h-5"/></div>
-                         <div className="max-w-xl p-3 rounded-lg bg-light-primary dark:bg-dark-primary"><p className="text-sm">Thinking...</p></div>
-                     </div>
-                 )}
+                )}
+                <AnimatePresence>
+                    {conversation.map((msg) => (
+                        <motion.div
+                            key={msg.id}
+                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            className={`flex items-end gap-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}
+                        >
+                            {msg.sender === 'ai' && (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                                    <RobotIcon className="w-4 h-4 text-white" />
+                                </div>
+                            )}
+                            <div className={`relative group max-w-2xl p-4 rounded-2xl text-sm leading-relaxed shadow-lg ${msg.sender === 'user'
+                                ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none'
+                                : 'bg-white/10 border border-white/5 text-gray-200 rounded-bl-none backdrop-blur-md'
+                                }`}>
+                                <p className="whitespace-pre-wrap font-sans">{msg.text}</p>
+                                {msg.sender === 'ai' && (
+                                    <motion.button
+                                        onClick={() => handlePlayAudio(msg)}
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        className="absolute -bottom-3 -right-3 p-2 rounded-full bg-black border border-white/10 text-gray-400 hover:text-white hover:border-blue-500/50 transition-all shadow-lg"
+                                        title="Read aloud"
+                                        disabled={loadingAudioId !== null && loadingAudioId !== msg.id}
+                                    >
+                                        {loadingAudioId === msg.id
+                                            ? <SpinnerIcon className="w-3 h-3 animate-spin text-blue-400" />
+                                            : <VolumeUpIcon className={`w-3 h-3 ${activeAudio?.messageId === msg.id ? 'text-blue-400' : ''}`} />
+                                        }
+                                    </motion.button>
+                                )}
+                            </div>
+                            {msg.sender === 'user' && (
+                                <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0 border border-white/10 overflow-hidden">
+                                    {user?.avatarUrl ? <img src={user.avatarUrl} alt="user" className="w-full h-full object-cover" /> : <UserIcon className="w-4 h-4 text-gray-400" />}
+                                </div>
+                            )}
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+                {isLoading && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center flex-shrink-0 animate-pulse">
+                            <RobotIcon className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="px-4 py-3 rounded-2xl bg-white/5 border border-white/5 rounded-bl-none">
+                            <div className="flex space-x-1">
+                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
             </div>
 
-            <div className="flex-shrink-0">
-                <div className="relative">
+            {/* Input */}
+            <div className="flex-shrink-0 bg-black/40 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl">
+                <div className="relative flex items-center">
                     <input
                         type="text"
                         value={query}
@@ -324,11 +381,19 @@ const DevWorkflowStreamliner: React.FC<DevWorkflowStreamlinerProps> = ({ repos, 
                         onKeyPress={e => e.key === 'Enter' && handleSendQuery()}
                         placeholder={repos.length > 0 ? "Ask a question about the selected repository..." : "Add a repository to begin."}
                         disabled={isLoading || repos.length === 0}
-                        className="w-full p-4 pr-32 bg-light-secondary dark:bg-dark-secondary border border-gray-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                        className="w-full pl-6 pr-16 py-4 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm font-medium"
                     />
-                    <button onClick={handleSendQuery} disabled={isLoading || !query} className="absolute right-3 top-1/2 -translate-y-1/2 btn-primary py-2 px-5 disabled:opacity-50">
-                        {isLoading ? <SpinnerIcon className="w-5 h-5" /> : 'Send'}
-                    </button>
+                    <div className="absolute right-2 flex items-center">
+                        <motion.button
+                            onClick={handleSendQuery}
+                            disabled={isLoading || !query}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="p-3 bg-gradient-to-r from-blue-500 to-violet-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all"
+                        >
+                            {isLoading ? <SpinnerIcon className="w-4 h-4 animate-spin" /> : <SendIcon className="w-4 h-4" />}
+                        </motion.button>
+                    </div>
                 </div>
             </div>
         </div>

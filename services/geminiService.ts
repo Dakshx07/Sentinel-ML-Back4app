@@ -35,7 +35,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, initialDelay = 10
         console.log(`Rate limiting: delaying next API call by ${delay}ms.`);
         await sleep(delay);
     }
-    
+
     lastApiCallTimestamp = Date.now();
 
     let attempt = 0;
@@ -63,7 +63,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, initialDelay = 10
                     isRetryable = true;
                 }
             }
-            
+
             if (isRetryable && attempt < retries - 1) {
                 const delay = initialDelay * Math.pow(2, attempt) + Math.floor(Math.random() * 500); // Exponential backoff with jitter
                 console.warn(`API call failed with retryable error. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${retries})`);
@@ -96,10 +96,10 @@ const handleGeminiError = (e: any): never => {
                     userMessage = "API rate limit reached. Please wait a moment and try again.";
                 }
             } else if (errorObj.message) {
-                 userMessage = errorObj.message;
+                userMessage = errorObj.message;
             }
         }
-    } catch(parseError) {
+    } catch (parseError) {
         // The error was not JSON, so we use the raw message.
     }
 
@@ -113,7 +113,7 @@ export const analyzeCode = async (code: string, language: string): Promise<Analy
     const cacheKey = `analysis-${code}`;
     const cachedResult = getCache<AnalysisIssue[]>(cacheKey);
     if (cachedResult) return cachedResult;
-    
+
     const maxTokens = parseInt(localStorage.getItem(MAX_OUTPUT_TOKENS_LOCAL_STORAGE_KEY) || '0', 10);
     const instruction = localStorage.getItem(SYSTEM_INSTRUCTION_LOCAL_STORAGE_KEY) || DEFAULT_SYSTEM_INSTRUCTION;
     const prompt = `Review the following ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\``;
@@ -159,8 +159,8 @@ export const analyzeCode = async (code: string, language: string): Promise<Analy
 export const analyzeCommitHistory = async (commits: GitHubCommit[]): Promise<CommitAnalysisIssue[]> => {
     const commitPayload = commits.slice(0, 30).map(c => ({ sha: c.sha, message: c.commit.message }));
     const prompt = `Analyze these Git commit messages for potential security red flags such as exposed secrets (API keys, passwords), insecure configurations, or suspicious keywords (e.g., 'disable security', 'temp creds'). For each commit message that contains a clear red flag, create an issue object. If a commit message is benign, DO NOT create an issue for it. If no commits contain any red flags, you MUST return an empty array. Commits: ${JSON.stringify(commitPayload)}`;
-    
-     const commitAnalysisSchema = {
+
+    const commitAnalysisSchema = {
         type: Type.ARRAY,
         items: {
             type: Type.OBJECT,
@@ -176,21 +176,21 @@ export const analyzeCommitHistory = async (commits: GitHubCommit[]): Promise<Com
             required: ['sha', 'severity', 'title', 'description', 'plainLanguageSummary', 'reasoning', 'remediation'],
         }
     };
-    
+
     try {
         const response: GenerateContentResponse = await withRetry(() => getAiClient().models.generateContent({
             model: 'gemini-2.5-flash-lite',
             contents: { parts: [{ text: prompt }] },
             config: {
-                 responseMimeType: 'application/json',
-                 responseSchema: commitAnalysisSchema,
+                responseMimeType: 'application/json',
+                responseSchema: commitAnalysisSchema,
             },
         }));
 
         const resultText = response.text.trim();
         return JSON.parse(resultText) as CommitAnalysisIssue[];
     } catch (e) {
-         handleGeminiError(e);
+        handleGeminiError(e);
     }
 };
 
@@ -223,7 +223,7 @@ export const queryRepoInsights = async (query: string, history: { sender: 'user'
 };
 
 export const refactorCode = async (code: string, language: string): Promise<RefactorResult> => {
-     const cacheKey = `refactor-${code}`;
+    const cacheKey = `refactor-${code}`;
     const cachedResult = getCache<RefactorResult>(cacheKey);
     if (cachedResult) return cachedResult;
 
@@ -245,7 +245,7 @@ export const refactorCode = async (code: string, language: string): Promise<Refa
     try {
         const response: GenerateContentResponse = await withRetry(() => getAiClient().models.generateContent({
             model: 'gemini-2.5-flash-lite',
-            contents: { parts: [{text: prompt}, {text: `\`\`\`${language}\n${code}\n\`\`\``}] },
+            contents: { parts: [{ text: prompt }, { text: `\`\`\`${language}\n${code}\n\`\`\`` }] },
             config: {
                 responseMimeType: 'application/json',
                 responseSchema: refactorSchema,
@@ -264,10 +264,11 @@ export const generateRepoReport = async (repo: Repository, commits: any[], contr
     const cacheKey = `repo-report-${repo.full_name}-${commits[0]?.sha}`;
     const cached = getCache<string>(cacheKey);
     if (cached) return cached;
-    
+
     const prompt = `
 Generate a comprehensive, developer-focused report for the repository "${repo.full_name}". 
-The report MUST be in clean, well-structured Markdown format with ample spacing. Use H3 "###" for all section headings. Use bold "**" for emphasis. Use bullet points "- " for lists.
+The report MUST be in clean, well-structured Markdown format.
+**IMPORTANT: Do NOT use any HTML tags (like <br>, <div>, <span>). Use standard Markdown newlines and formatting only.**
 
 **Repository Details:**
 - Description: ${repo.description}
@@ -283,7 +284,7 @@ ${contributors.map(c => `- ${c.login} (${c.contributions} contributions)`).join(
 **Language Breakdown:**
 ${Object.entries(languages).map(([lang, bytes]) => `- ${lang}: ${bytes} bytes`).join('\n')}
 
-Based on the data above, generate a professional report with the following sections.
+Based on the data above, generate a professional report with the following sections. Use H3 "###" for section headings.
 
 ### Executive Summary
 A brief, high-level overview of the repository's current state and recent activity.
@@ -321,7 +322,7 @@ export const analyzeDependencies = async (dependencies: { name: string, version:
     if (cachedResult) return cachedResult;
 
     const prompt = `As a security and performance analyst, examine the following software dependencies. For each finding, provide a clear title, a brief explanation of the risk or opportunity, and a specific recommendation. **Do not use markdown asterisks or any other markdown formatting.** Present the information in plain, readable text. If there are no noteworthy findings, state that 'No significant security or optimization issues were found.' Dependencies: ${JSON.stringify(dependencies, null, 2)}`;
-    
+
     try {
         const response: GenerateContentResponse = await withRetry(() => getAiClient().models.generateContent({
             model: 'gemini-2.5-flash-lite',
@@ -342,25 +343,30 @@ export const generateImage = async (prompt: string): Promise<string> => {
 
     try {
         const response: GenerateImagesResponse = await withRetry(() => getAiClient().models.generateImages({
-            model: 'imagen-4.0-generate-001',
+            model: 'imagen-3.0-generate-001', // Updated to a more stable model version if available, or keep 4.0 if user has access
             prompt,
             config: {
                 numberOfImages: 1,
                 outputMimeType: 'image/png',
             }
         }));
-        
+
         const base64ImageBytes = response.generatedImages?.[0]?.image?.imageBytes;
         if (!base64ImageBytes) {
             throw new Error("Image generation failed to return an image.");
         }
-        
+
         const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
         setCache(cacheKey, imageUrl, 60 * 60 * 1000); // 1 hour TTL for images
         return imageUrl;
-        
-    } catch (e) {
+
+    } catch (e: any) {
+        console.error("Image Gen Error:", e);
+        if (e.message?.includes('403') || e.message?.includes('permission') || e.message?.includes('billing')) {
+            throw new Error("Image Generation requires the 'Imagen API' to be enabled in your Google Cloud Console and a linked Billing Account.");
+        }
         handleGeminiError(e);
+        throw e; // Ensure it throws if handleGeminiError doesn't
     }
 };
 

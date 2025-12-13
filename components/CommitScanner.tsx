@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { GithubIcon, ShieldIcon, ErrorIcon, SettingsIcon, HistoryIcon, CodeIcon, SpinnerIcon, DoubleArrowLeftIcon, DoubleArrowRightIcon } from './icons';
+import { GithubIcon, ShieldIcon, ErrorIcon, SettingsIcon, HistoryIcon, CodeIcon, SpinnerIcon, DoubleArrowLeftIcon, DoubleArrowRightIcon, SearchIcon, RepoIcon } from './icons';
 import { parseGitHubUrl, getRepoCommits, getCommitDiff } from '../services/githubService';
 import { analyzeCommitHistory, isApiKeySet } from '../services/geminiService';
 import { GitHubCommit, CommitAnalysisIssue, User, Repository } from '../types';
 import { useToast } from './ToastContext';
 import AnalysisLoader from './AnalysisLoader';
 import ToggleSwitch from './ToggleSwitch';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
 type Tab = 'details' | 'analysis';
@@ -14,30 +15,49 @@ const CommitCard: React.FC<{ commit: GitHubCommit, issue: CommitAnalysisIssue | 
     const firstLineOfMessage = commit.commit.message.split('\n')[0];
     const commitDate = new Date(commit.commit.author.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-    const severityClass = issue ? {
-        Critical: 'border-red-500/80',
-        High: 'border-orange-500/80',
-        Medium: 'border-yellow-400/80',
-        Low: 'border-blue-400/80',
-    }[issue.severity] : 'border-gray-200 dark:border-white/10';
+    const severityColors: Record<string, { border: string; bg: string; text: string; shadow: string }> = {
+        Critical: { border: 'border-red-500', bg: 'bg-red-500/10', text: 'text-red-400', shadow: 'shadow-[0_0_15px_rgba(239,68,68,0.2)]' },
+        High: { border: 'border-orange-500', bg: 'bg-orange-500/10', text: 'text-orange-400', shadow: 'shadow-[0_0_15px_rgba(249,115,22,0.2)]' },
+        Medium: { border: 'border-yellow-500', bg: 'bg-yellow-500/10', text: 'text-yellow-400', shadow: 'shadow-[0_0_15px_rgba(234,179,8,0.2)]' },
+        Low: { border: 'border-blue-500', bg: 'bg-blue-500/10', text: 'text-blue-400', shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.2)]' },
+    };
+
+    const colors = issue ? severityColors[issue.severity] : { border: 'border-white/5', bg: 'bg-transparent', text: 'text-gray-400', shadow: '' };
 
     return (
-        <div
+        <motion.div
             onClick={onSelect}
-            className={`p-3 border-l-4 rounded-r-md transition-all cursor-pointer flex items-start space-x-3 bg-light-primary dark:bg-dark-primary ${isSelected ? 'bg-brand-purple/20 border-brand-purple' : `${severityClass} hover:bg-gray-200 dark:hover:bg-white/5`}`}
+            whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
+            className={`p-4 border-l-2 rounded-r-xl transition-all cursor-pointer flex items-start space-x-3 mb-2 ${isSelected
+                ? 'bg-blue-500/10 border-blue-500 shadow-[inset_0_0_20px_rgba(59,130,246,0.1)]'
+                : `${colors.bg} ${colors.border} hover:bg-white/5`
+                }`}
         >
-            {issue && <ShieldIcon severity={issue.severity} className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+            <div className="flex-shrink-0 mt-1">
+                {issue ? (
+                    <ShieldIcon severity={issue.severity} className={`w-4 h-4 ${colors.text}`} />
+                ) : (
+                    <div className="w-4 h-4 rounded-full border border-gray-600 bg-gray-800/50" />
+                )}
+            </div>
             <div className="flex-grow overflow-hidden">
-                <p className={`font-semibold text-dark-text dark:text-white truncate ${issue ? 'text-orange-500 dark:text-orange-400' : ''}`} title={firstLineOfMessage}>
+                <p className={`font-medium text-sm truncate ${issue ? 'text-white' : 'text-gray-300'}`} title={firstLineOfMessage}>
                     {firstLineOfMessage}
                 </p>
-                <div className="text-xs text-medium-dark-text dark:text-medium-text mt-1 flex items-center space-x-2 flex-wrap">
-                    <span className="truncate">{commit.commit.author.name}</span>
-                    <span className="font-mono">{commit.sha.substring(0, 7)}</span>
-                    <span>{commitDate}</span>
+                <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white">
+                            {commit.commit.author.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-[10px] text-gray-500 truncate max-w-[80px]">{commit.commit.author.name}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-[10px] font-mono text-gray-600">
+                        <span className="bg-white/5 px-1.5 py-0.5 rounded">{commit.sha.substring(0, 7)}</span>
+                        <span>{commitDate}</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 
@@ -61,7 +81,7 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
     const [commitDiff, setCommitDiff] = useState<string | null>(null);
     const [isDiffLoading, setIsDiffLoading] = useState(false);
     const [isCommitPanelCollapsed, setIsCommitPanelCollapsed] = useState(false);
-    
+
     const repoUrlToScan = useMemo(() => {
         return useManualInput ? manualRepoUrl : `https://github.com/${selectedRepoFullName}`;
     }, [useManualInput, manualRepoUrl, selectedRepoFullName]);
@@ -71,7 +91,7 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
             setSelectedRepoFullName(repos[0].full_name);
         }
     }, [repos, selectedRepoFullName]);
-    
+
     useEffect(() => {
         const fetchDiff = async () => {
             if (!selectedCommit) {
@@ -114,10 +134,10 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
             setError("Please set your Gemini API key in Settings to analyze commits.");
             return;
         }
-        
+
         const parsed = parseGitHubUrl(repoUrlToScan);
         if (!parsed) {
-            if(useManualInput) {
+            if (useManualInput) {
                 addToast("Invalid GitHub repository URL.", 'error');
             }
             return;
@@ -131,7 +151,7 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
         try {
             const fetchedCommits = await getRepoCommits(parsed.owner, parsed.repo);
             setCommits(fetchedCommits);
-            
+
             if (fetchedCommits.length > 0) {
                 const analysisResults = await analyzeCommitHistory(fetchedCommits);
 
@@ -144,7 +164,7 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
 
                 setIssues(validatedResults);
                 addToast(`Analysis complete! Found ${validatedResults.length} potential issue(s).`, 'success');
-                
+
                 if (validatedResults.length > 0) {
                     const firstCommitWithIssue = fetchedCommits.find(c => validatedResults.some(i => i.sha === c.sha));
                     if (firstCommitWithIssue) {
@@ -152,9 +172,9 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
                     }
                 }
             } else {
-                 addToast(`No commits found for the default branch of ${parsed.owner}/${parsed.repo}.`, 'warning');
+                addToast(`No commits found for the default branch of ${parsed.owner}/${parsed.repo}.`, 'warning');
             }
-            
+
         } catch (e: any) {
             const errorMessage = e.message || "An unknown error occurred during the scan.";
             setError(errorMessage);
@@ -163,7 +183,7 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
             setIsLoading(false);
         }
     }, [repoUrlToScan, user.github, addToast, useManualInput]);
-    
+
     useEffect(() => {
         if (!useManualInput && selectedRepoFullName && user.github) {
             handleScanCommits();
@@ -171,7 +191,7 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
     }, [useManualInput, selectedRepoFullName, handleScanCommits, user.github]);
 
     useEffect(() => {
-        if(selectedCommit){
+        if (selectedCommit) {
             const issueFound = issues.some(i => i.sha === selectedCommit.sha);
             setActiveTab(issueFound ? 'analysis' : 'details');
         }
@@ -179,34 +199,53 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
 
     const selectedIssue = issues.find(issue => issue.sha === selectedCommit?.sha);
 
-    const TabButton = ({ id, label, icon }: {id: Tab, label: string, icon: React.ReactNode}) => (
-      <button
-        onClick={() => setActiveTab(id)}
-        className={`flex-1 flex items-center justify-center p-3 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? 'text-brand-purple border-brand-purple' : 'text-medium-dark-text dark:text-medium-text border-transparent hover:bg-gray-100 dark:hover:bg-white/5'}`}
-      >
-        {icon}
-        <span className="ml-2">{label}</span>
-      </button>
+    const TabButton = ({ id, label, icon }: { id: Tab, label: string, icon: React.ReactNode }) => (
+        <button
+            onClick={() => setActiveTab(id)}
+            className={`flex-1 flex items-center justify-center py-4 text-sm font-bold uppercase tracking-wider transition-all relative overflow-hidden ${activeTab === id
+                ? 'text-white'
+                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                }`}
+        >
+            <div className="flex items-center space-x-2 z-10">
+                {icon}
+                <span>{label}</span>
+            </div>
+            {activeTab === id && (
+                <motion.div
+                    layoutId="activeTab"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"
+                />
+            )}
+            {activeTab === id && (
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent" />
+            )}
+        </button>
     );
-    
+
     const DiffViewer: React.FC<{ diff: string }> = ({ diff }) => {
         const highlightedDiff = useMemo(() => {
             if (window.hljs && diff) {
                 try {
                     return window.hljs.highlight(diff, { language: 'diff', ignoreIllegals: true }).value;
                 } catch (e) {
-                    return diff; // Fallback
+                    return diff;
                 }
             }
             return diff;
         }, [diff]);
 
         return (
-            <div className="mt-4">
-                <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading mb-2">Code Changes in Commit</h3>
-                <pre className="whitespace-pre-wrap bg-light-primary dark:bg-dark-primary p-4 rounded-md text-sm font-mono border border-gray-200 dark:border-white/10">
-                    <code dangerouslySetInnerHTML={{ __html: highlightedDiff }} />
-                </pre>
+            <div className="mt-6 animate-fade-in-up">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center">
+                    <CodeIcon className="w-4 h-4 mr-2" />
+                    Code Changes
+                </h3>
+                <div className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+                    <pre className="whitespace-pre-wrap p-4 text-xs font-mono text-gray-300 overflow-x-auto custom-scrollbar">
+                        <code dangerouslySetInnerHTML={{ __html: highlightedDiff }} />
+                    </pre>
+                </div>
             </div>
         );
     };
@@ -214,154 +253,239 @@ const CommitScanner: React.FC<CommitScannerProps> = ({ user, onNavigateToSetting
     const MainContent = () => {
         if (isLoading) {
             return (
-                <div className="flex flex-col items-center justify-center h-full bg-light-secondary dark:bg-dark-primary">
+                <div className="flex flex-col items-center justify-center h-full bg-black/20 backdrop-blur-sm">
                     <AnalysisLoader steps={['Fetching recent commits...', 'Analyzing commit history...', 'Checking for exposed secrets...', 'Compiling report...']} />
                 </div>
             );
         }
 
         if (error) {
-             return <ErrorMessage message={error} onNavigateToSettings={onNavigateToSettings} />;
+            return <ErrorMessage message={error} onNavigateToSettings={onNavigateToSettings} />;
         }
 
         if (!selectedCommit) {
             return (
-                 <div className="flex flex-col items-center justify-center h-full text-center text-medium-dark-text dark:text-medium-text p-4">
-                    <HistoryIcon className="w-16 h-16 mb-4 text-gray-300 dark:text-white/10"/>
-                    <h3 className="text-lg font-bold text-dark-text dark:text-light-text font-heading">Scan Commit History</h3>
-                    <p className="mt-1 max-w-xs">Select a commit from the list to view its details and security analysis.</p>
+                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                        <HistoryIcon className="w-10 h-10 text-gray-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white font-heading">Scan Commit History</h3>
+                    <p className="mt-3 text-gray-400 text-sm max-w-sm leading-relaxed">Select a commit from the list to view its details and security analysis.</p>
                 </div>
             );
         }
 
         return (
-            <div className="flex flex-col h-full bg-light-secondary dark:bg-dark-primary">
-                <div className="flex border-b border-gray-200 dark:border-white/10 flex-shrink-0">
-                    <TabButton id="details" label="Details" icon={<CodeIcon className="w-5 h-5"/>}/>
-                    <TabButton id="analysis" label={`AI Analysis ${selectedIssue ? '(1)' : '(0)'}`} icon={<ShieldIcon severity={selectedIssue?.severity || "Low"} className="w-5 h-5"/>}/>
+            <div className="flex flex-col h-full bg-black/20 backdrop-blur-sm">
+                <div className="flex border-b border-white/5 flex-shrink-0 bg-black/20">
+                    <TabButton id="details" label="Details" icon={<CodeIcon className="w-4 h-4" />} />
+                    <TabButton id="analysis" label={`Analysis ${selectedIssue ? '(1)' : '(0)'}`} icon={<ShieldIcon severity={selectedIssue?.severity || "Low"} className="w-4 h-4" />} />
                 </div>
-                <div className="flex-grow p-6 overflow-y-auto">
-                    {activeTab === 'details' && (
-                        <div className="space-y-6">
-                            <div>
-                                <p className="font-mono text-sm text-medium-dark-text dark:text-medium-text"> commit <span className="text-yellow-600 dark:text-yellow-400">{selectedCommit.sha}</span></p>
-                                <p className="text-sm text-medium-dark-text dark:text-medium-text mt-1"> Author: {selectedCommit.commit.author.name} &lt;{selectedCommit.commit.author.email}&gt; </p>
-                                <p className="text-sm text-medium-dark-text dark:text-medium-text"> Date: {new Date(selectedCommit.commit.author.date).toUTCString()} </p>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading mb-2">Commit Message</h3>
-                                <pre className="whitespace-pre-wrap bg-light-primary dark:bg-dark-secondary p-4 rounded-md text-sm font-mono text-dark-text dark:text-light-text border border-gray-200 dark:border-white/10">{selectedCommit.commit.message}</pre>
-                            </div>
-                        </div>
-                    )}
-                    {activeTab === 'analysis' && (
-                         <>
-                            {selectedIssue ? (
-                                <div className="p-4 border-l-4 rounded-r-md border-orange-500 bg-orange-100 dark:bg-orange-900/20 space-y-4">
-                                    <div className="flex items-start space-x-3">
-                                        <ShieldIcon severity={selectedIssue.severity} className="w-6 h-6 flex-shrink-0 mt-1" />
-                                        <div>
-                                            <h4 className="font-bold text-lg text-dark-text dark:text-white">{selectedIssue.title}</h4>
-                                            <p className="mt-1 text-medium-dark-text dark:text-light-text">{selectedIssue.description}</p>
+                <div className="flex-grow p-8 overflow-y-auto custom-scrollbar">
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'details' && (
+                            <motion.div
+                                key="details"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="space-y-8"
+                            >
+                                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg">
+                                                {selectedCommit.commit.author.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-white font-bold">{selectedCommit.commit.author.name}</h4>
+                                                <p className="text-xs text-gray-400">{selectedCommit.commit.author.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-mono text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">{selectedCommit.sha}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{new Date(selectedCommit.commit.author.date).toUTCString()}</p>
                                         </div>
                                     </div>
-                                    <div className="border-t border-gray-200 dark:border-white/10 pt-3">
-                                        <h5 className="font-semibold text-dark-text dark:text-white text-base">Plain Language Summary</h5>
-                                        <p className="text-sm text-medium-dark-text dark:text-medium-text mt-1 italic">"{selectedIssue.plainLanguageSummary}"</p>
+                                    <div className="border-t border-white/5 pt-4">
+                                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Commit Message</h3>
+                                        <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{selectedCommit.commit.message}</p>
                                     </div>
-                                    <div>
-                                        <h5 className="font-semibold text-dark-text dark:text-white">Reasoning</h5>
-                                        <p className="text-sm text-medium-dark-text dark:text-medium-text mt-1">{selectedIssue.reasoning}</p>
-                                    </div>
-                                    <div>
-                                        <h5 className="font-semibold text-dark-text dark:text-white">Suggested Remediation</h5>
-                                        <p className="text-sm text-medium-dark-text dark:text-medium-text mt-1">{selectedIssue.remediation}</p>
-                                    </div>
-                                     {isDiffLoading && (
-                                        <div className="flex items-center justify-center p-4">
-                                            <SpinnerIcon className="w-6 h-6" />
-                                            <span className="ml-2">Loading diff...</span>
+                                </div>
+                            </motion.div>
+                        )}
+                        {activeTab === 'analysis' && (
+                            <motion.div
+                                key="analysis"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                            >
+                                {selectedIssue ? (
+                                    <div className="bg-gradient-to-br from-orange-500/10 to-red-500/5 border border-orange-500/20 rounded-2xl p-6 shadow-[0_0_30px_rgba(249,115,22,0.1)]">
+                                        <div className="flex items-start space-x-4 mb-6">
+                                            <div className="p-3 bg-orange-500/20 rounded-xl border border-orange-500/30">
+                                                <ShieldIcon severity={selectedIssue.severity} className="w-6 h-6 text-orange-400" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xl font-bold text-white font-heading">{selectedIssue.title}</h4>
+                                                <p className="mt-1 text-gray-400 text-sm">{selectedIssue.description}</p>
+                                            </div>
                                         </div>
-                                    )}
-                                    {commitDiff && !isDiffLoading && <DiffViewer diff={commitDiff} />}
-                                </div>
-                            ) : (
-                                <div className="p-4 border-l-4 rounded-r-md border-green-500 bg-green-100 dark:bg-green-900/20">
-                                    <h4 className="font-bold text-lg text-dark-text dark:text-white">No security issues found by Sentinel in this commit.</h4>
-                                </div>
-                            )}
-                         </>
-                    )}
+
+                                        <div className="grid gap-6 md:grid-cols-2">
+                                            <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+                                                <h5 className="font-bold text-white text-xs uppercase tracking-wider mb-2 text-blue-400">Summary</h5>
+                                                <p className="text-sm text-gray-300 leading-relaxed">"{selectedIssue.plainLanguageSummary}"</p>
+                                            </div>
+                                            <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+                                                <h5 className="font-bold text-white text-xs uppercase tracking-wider mb-2 text-purple-400">Reasoning</h5>
+                                                <p className="text-sm text-gray-300 leading-relaxed">{selectedIssue.reasoning}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6 bg-green-500/10 rounded-xl p-4 border border-green-500/20">
+                                            <h5 className="font-bold text-green-400 text-xs uppercase tracking-wider mb-2">Remediation</h5>
+                                            <p className="text-sm text-gray-300 leading-relaxed">{selectedIssue.remediation}</p>
+                                        </div>
+
+                                        {isDiffLoading && (
+                                            <div className="flex items-center justify-center p-8">
+                                                <SpinnerIcon className="w-6 h-6 text-blue-400 animate-spin" />
+                                                <span className="ml-3 text-sm text-gray-400">Fetching diff...</span>
+                                            </div>
+                                        )}
+                                        {commitDiff && !isDiffLoading && <DiffViewer diff={commitDiff} />}
+                                    </div>
+                                ) : (
+                                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-8 text-center">
+                                        <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <ShieldIcon severity="Low" className="w-8 h-8 text-emerald-400" />
+                                        </div>
+                                        <h4 className="text-xl font-bold text-white mb-2">Clean Commit</h4>
+                                        <p className="text-emerald-400/80">No security issues found in this commit.</p>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         )
     }
-    
+
     const ErrorMessage = ({ message, onNavigateToSettings }: { message: string, onNavigateToSettings: () => void }) => (
-        <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-light-secondary dark:bg-dark-primary">
-            <ErrorIcon className="w-12 h-12 text-yellow-500 mb-4" />
-            <h3 className="text-lg font-bold text-dark-text dark:text-white font-heading">An Error Occurred</h3>
-            <p className="mt-2 text-medium-dark-text dark:text-medium-text max-w-sm">{message}</p>
-            <button onClick={onNavigateToSettings} className="mt-6 flex items-center justify-center btn-primary">
-                <SettingsIcon className="w-5 h-5 mr-2" /> Go to Settings
-            </button>
+        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-black/20 backdrop-blur-sm">
+            <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                <ErrorIcon className="w-10 h-10 text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Access Restricted</h3>
+            <p className="text-gray-400 text-sm max-w-sm leading-relaxed mb-8">{message}</p>
+            <motion.button
+                onClick={onNavigateToSettings}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-3 bg-white text-black font-bold text-sm rounded-full flex items-center space-x-2 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all"
+            >
+                <SettingsIcon className="w-4 h-4" />
+                <span>Configure Access</span>
+            </motion.button>
         </div>
     );
 
     return (
-        <div className="h-full w-full glass-effect rounded-lg overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
-            <div 
-                className="flex-shrink-0 bg-light-secondary/50 dark:bg-dark-secondary/50 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-white/10 flex flex-col transition-all duration-300 ease-in-out w-full lg:w-5/12"
-                style={{ width: isCommitPanelCollapsed ? '3.5rem' : '' }}
+        <div className="h-full w-full bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden flex flex-col lg:flex-row shadow-2xl animate-fade-in-up">
+            {/* Left Panel - Commit List */}
+            <motion.div
+                initial={false}
+                animate={{ width: isCommitPanelCollapsed ? '4rem' : '22rem' }}
+                transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                className="flex-shrink-0 bg-black/20 border-b lg:border-b-0 lg:border-r border-white/5 flex flex-col relative"
             >
-                <div className="p-4 border-b border-gray-200 dark:border-white/10 flex-shrink-0 overflow-hidden">
-                     {!isCommitPanelCollapsed && (
-                        <>
-                            <div className="relative">
-                                <GithubIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-medium-dark-text dark:text-medium-text" />
+                <div className="p-4 border-b border-white/5 flex-shrink-0">
+                    {!isCommitPanelCollapsed && (
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Repository</h3>
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-[10px] text-gray-500">Manual</span>
+                                    <ToggleSwitch enabled={useManualInput} setEnabled={setUseManualInput} />
+                                </div>
+                            </div>
+
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {useManualInput ? <SearchIcon className="h-4 w-4 text-gray-500" /> : <RepoIcon className="h-4 w-4 text-gray-500" />}
+                                </div>
                                 {useManualInput ? (
-                                    <input type="text" value={manualRepoUrl} onChange={(e) => setManualRepoUrl(e.target.value)} placeholder="https://github.com/user/repo"
-                                        className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-2 pl-10 font-mono text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                                    <input
+                                        type="text"
+                                        value={manualRepoUrl}
+                                        onChange={(e) => setManualRepoUrl(e.target.value)}
+                                        placeholder="https://github.com/user/repo"
+                                        className="block w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-mono"
                                     />
                                 ) : (
-                                    <select 
-                                        value={selectedRepoFullName} 
-                                        onChange={(e) => setSelectedRepoFullName(e.target.value)} 
+                                    <select
+                                        value={selectedRepoFullName}
+                                        onChange={(e) => setSelectedRepoFullName(e.target.value)}
                                         disabled={isLoading || repos.length === 0}
-                                        className="w-full bg-light-primary dark:bg-dark-primary border border-gray-300 dark:border-white/10 rounded-md p-2 pl-10 font-mono text-sm text-dark-text dark:text-light-text focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                                        className="block w-full pl-10 pr-8 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none cursor-pointer"
                                     >
                                         {repos.length > 0 ? repos.map(repo => <option key={repo.id} value={repo.full_name}>{repo.full_name}</option>) : <option>Add a repo first</option>}
                                     </select>
                                 )}
                             </div>
-                            <div className="flex flex-wrap items-center justify-between gap-2 mt-3">
-                                <div className="flex items-center space-x-2">
-                                    <ToggleSwitch enabled={useManualInput} setEnabled={setUseManualInput} />
-                                    <span className="text-xs text-medium-dark-text dark:text-medium-text">Enter Manually</span>
-                                </div>
-                                <button onClick={handleScanCommits} disabled={isLoading || !user.github || !repoUrlToScan} className="btn-primary py-2 px-4 disabled:opacity-50">
-                                    {isLoading ? 'Scanning...' : 'Scan Commits'}
-                                </button>
-                            </div>
-                        </>
-                     )}
+
+                            <motion.button
+                                onClick={handleScanCommits}
+                                disabled={isLoading || !user.github || !repoUrlToScan}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="w-full py-2.5 bg-white text-black font-bold text-xs rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all flex items-center justify-center"
+                            >
+                                {isLoading ? (
+                                    <><SpinnerIcon className="w-4 h-4 mr-2 animate-spin" /> Scanning...</>
+                                ) : (
+                                    'Scan History'
+                                )}
+                            </motion.button>
+                        </div>
+                    )}
                 </div>
-                <div className="flex-grow overflow-y-auto p-4 space-y-2 min-h-0">
-                    {isLoading && <div className="p-2 text-medium-dark-text dark:text-medium-text flex items-center justify-center pt-8"><SpinnerIcon className="w-8 h-8"/></div>}
-                    {!isCommitPanelCollapsed && !isLoading && commits.length === 0 && <p className="text-center text-medium-dark-text dark:text-medium-text pt-8">Scan a repository to see its commit history.</p>}
+                <div className="flex-grow overflow-y-auto p-3 space-y-1 min-h-0 custom-scrollbar">
+                    {isLoading && (
+                        <div className="flex flex-col items-center justify-center h-40 space-y-3">
+                            <SpinnerIcon className="w-6 h-6 text-blue-400 animate-spin" />
+                            <span className="text-xs text-gray-500">Analyzing commits...</span>
+                        </div>
+                    )}
+                    {!isCommitPanelCollapsed && !isLoading && commits.length === 0 && (
+                        <div className="text-center p-8 opacity-50">
+                            <HistoryIcon className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+                            <p className="text-xs text-gray-500">No commits found</p>
+                        </div>
+                    )}
                     {!isCommitPanelCollapsed && commits.map(commit => (
-                        <CommitCard key={commit.sha} commit={commit} issue={issues.find(i => i.sha === commit.sha)}
-                            isSelected={selectedCommit?.sha === commit.sha} onSelect={() => setSelectedCommit(commit)}
+                        <CommitCard
+                            key={commit.sha}
+                            commit={commit}
+                            issue={issues.find(i => i.sha === commit.sha)}
+                            isSelected={selectedCommit?.sha === commit.sha}
+                            onSelect={() => setSelectedCommit(commit)}
                         />
                     ))}
                 </div>
-                 <div className="p-1 border-t border-gray-200 dark:border-white/10">
-                    <button onClick={() => setIsCommitPanelCollapsed(!isCommitPanelCollapsed)} className="w-full p-2 flex items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-dark-primary text-medium-dark-text dark:text-medium-text" title={isCommitPanelCollapsed ? "Expand" : "Collapse"}>
-                        {isCommitPanelCollapsed ? <DoubleArrowRightIcon className="w-5 h-5" /> : <DoubleArrowLeftIcon className="w-5 h-5" />}
+                <div className="p-3 border-t border-white/5">
+                    <button
+                        onClick={() => setIsCommitPanelCollapsed(!isCommitPanelCollapsed)}
+                        className="w-full p-2 flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-500 hover:text-white transition-colors"
+                    >
+                        {isCommitPanelCollapsed ? <DoubleArrowRightIcon className="w-4 h-4" /> : <DoubleArrowLeftIcon className="w-4 h-4" />}
                     </button>
                 </div>
-            </div>
-            <div className="flex-grow min-w-0">
+            </motion.div>
+            <div className="flex-grow min-w-0 bg-black/20">
                 <MainContent />
             </div>
         </div>

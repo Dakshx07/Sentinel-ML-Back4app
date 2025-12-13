@@ -508,3 +508,51 @@ export const getMonitoredReposHealth = async (repos: Repository[]): Promise<Repo
 
     return Promise.all(healthPromises);
 };
+
+// FEAT: Direct Push Functionality
+export const pushFileToRepo = async (
+    owner: string,
+    repo: string,
+    filePath: string,
+    content: string,
+    commitMessage: string,
+    branch?: string
+): Promise<void> => {
+    const octokit = getOctokit();
+    try {
+        // 1. Get the current file SHA (if it exists) to allow updates
+        let sha: string | undefined;
+        try {
+            const { data } = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: filePath,
+                ref: branch,
+            });
+            if (!Array.isArray(data) && data.type === 'file') {
+                sha = data.sha;
+            }
+        } catch (e: any) {
+            if (e.status !== 404) throw e;
+        }
+
+        // 2. Create or update the file
+        await octokit.rest.repos.createOrUpdateFileContents({
+            owner,
+            repo,
+            path: filePath,
+            message: commitMessage,
+            content: btoa(unescape(encodeURIComponent(content))),
+            sha,
+            branch,
+        });
+
+    } catch (error: any) {
+        console.error("Direct push failed:", error);
+        let userMessage = error.message || 'An unknown error occurred.';
+        if (error.status === 403) {
+            userMessage = "Permission denied. Your GitHub PAT is missing the 'repo' scope required to push code.";
+        }
+        throw new GitHubApiError(userMessage, error.status || 500);
+    }
+};

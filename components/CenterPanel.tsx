@@ -54,7 +54,7 @@ const DiffViewer: React.FC<{ diff: string; language: string; issue: AnalysisIssu
         return (
           <div key={index} className="flex">
             <span className="w-8 pl-4 text-center select-none flex-shrink-0"> </span>
-            <span className="flex-1" dangerouslySetInnerHTML={{ __html: highlightedComment }} />
+            <span className="flex-1 text-gray-400 italic" dangerouslySetInnerHTML={{ __html: highlightedComment }} />
           </div>
         );
       }
@@ -64,7 +64,7 @@ const DiffViewer: React.FC<{ diff: string; language: string; issue: AnalysisIssu
         return null; // Skip non-diff lines
       }
       const content = line.substring(1);
-      const lineClass = prefix === '+' ? 'bg-green-500/10' : 'bg-red-500/10';
+      const lineClass = prefix === '+' ? 'bg-green-500/10 text-green-300' : 'bg-red-500/10 text-red-300 line-through opacity-70';
 
       const highlightedContent = (typeof window.hljs !== 'undefined' && content.trim())
         ? window.hljs.highlight(content, { language, ignoreIllegals: true }).value
@@ -80,7 +80,7 @@ const DiffViewer: React.FC<{ diff: string; language: string; issue: AnalysisIssu
   }, [diff, language, issue, commentPrefix]);
 
   return (
-    <pre className="text-sm font-mono whitespace-pre-wrap break-words">
+    <pre className="text-sm font-mono whitespace-pre-wrap break-words p-4">
       <code>
         {diffBlock}
       </code>
@@ -93,16 +93,16 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ activeFile, issues, selectedI
 
   const getLineClassName = (lineNumber: number): string => {
     const issueOnLine = issues.find(i => i.line === lineNumber);
-    const baseClass = 'px-4 bg-light-secondary dark:bg-dark-primary';
+    const baseClass = 'px-4 hover:bg-white/5 transition-colors';
     if (selectedIssue?.line === lineNumber) {
-      return `${baseClass} bg-brand-purple/20 border-l-2 border-brand-purple`;
+      return `${baseClass} bg-purple-500/20 border-l-2 border-purple-500`;
     }
     if (issueOnLine) {
       const severityClasses: { [key: string]: string } = {
-        Critical: 'bg-red-100 dark:bg-red-900/40',
-        High: 'bg-orange-100 dark:bg-orange-900/40',
-        Medium: 'bg-yellow-100 dark:bg-yellow-900/40',
-        Low: 'bg-blue-100 dark:bg-blue-900/40',
+        Critical: 'bg-red-500/20 border-l-2 border-red-500',
+        High: 'bg-orange-500/20 border-l-2 border-orange-500',
+        Medium: 'bg-yellow-500/20 border-l-2 border-yellow-500',
+        Low: 'bg-blue-500/20 border-l-2 border-blue-500',
       };
       return `${baseClass} ${severityClasses[issueOnLine.severity]}`;
     }
@@ -112,8 +112,11 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ activeFile, issues, selectedI
   const renderCode = () => {
     if (!activeFile) {
       return (
-        <div className="flex items-center justify-center h-full text-medium-dark-text dark:text-medium-text">
-          <p>Select a file or paste a code snippet to begin analysis.</p>
+        <div className="flex flex-col items-center justify-center h-full text-gray-500">
+          <div className="w-16 h-16 border-2 border-white/10 rounded-xl flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+          </div>
+          <p className="text-sm">Select a file to begin analysis</p>
         </div>
       );
     }
@@ -136,12 +139,12 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ activeFile, issues, selectedI
 
     const codeLines = highlightedCodeHTML.split('\n');
     return (
-      <pre className="text-sm font-mono whitespace-pre-wrap break-words">
+      <pre className="text-sm font-mono whitespace-pre-wrap break-words py-4">
         <code>
           {codeLines.map((line, index) => (
             <div key={index} className={`flex ${getLineClassName(index + 1)}`}>
-              <span className="w-12 text-right pr-4 text-medium-dark-text dark:text-medium-text select-none">{index + 1}</span>
-              <span className="flex-1" dangerouslySetInnerHTML={{ __html: line || ' ' }} />
+              <span className="w-12 text-right pr-4 text-gray-600 select-none font-mono text-xs pt-0.5">{index + 1}</span>
+              <span className="flex-1 text-gray-300" dangerouslySetInnerHTML={{ __html: line || ' ' }} />
             </div>
           ))}
         </code>
@@ -150,20 +153,22 @@ const CenterPanel: React.FC<CenterPanelProps> = ({ activeFile, issues, selectedI
   }
 
   return (
-    <div className="bg-light-secondary dark:bg-dark-primary text-dark-text dark:text-light-text flex flex-col h-full relative">
-      <div className="p-3 border-b border-gray-200 dark:border-white/10 text-sm font-medium flex-shrink-0">
-        {activeFile?.name || 'Code View'}
+    <div className="bg-transparent text-white flex flex-col h-full relative">
+      <div className="px-4 py-3 border-b border-white/5 text-xs font-mono text-gray-400 flex items-center justify-between bg-black/20">
+        <span>{activeFile?.name || 'No file selected'}</span>
+        {activeFile && <span className="text-[10px] uppercase tracking-wider opacity-50">{activeFile.language}</span>}
       </div>
-      <div className="flex-grow relative min-h-0">
-        <div className="absolute inset-0 overflow-y-auto">
+      <div className="flex-grow relative min-h-0 bg-[#0d1117]/50">
+        <div className="absolute inset-0 overflow-y-auto custom-scrollbar">
           {renderCode()}
         </div>
       </div>
       {isLoading && (
-        <div className="absolute inset-0 bg-light-secondary/50 dark:bg-dark-primary/70 backdrop-blur-sm flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10">
           <div className="text-center">
-            <SpinnerIcon className="w-8 h-8 text-brand-purple mx-auto" />
-            <p className="mt-2 font-semibold">Analyzing...</p>
+            <SpinnerIcon className="w-10 h-10 text-blue-500 mx-auto animate-spin" />
+            <p className="mt-3 font-bold text-white tracking-wide">ANALYZING CODE STRUCTURE</p>
+            <p className="text-xs text-gray-500 mt-1">Detecting vulnerabilities...</p>
           </div>
         </div>
       )}

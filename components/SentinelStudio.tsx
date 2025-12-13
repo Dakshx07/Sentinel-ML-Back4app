@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import LeftPanel from './LeftPanel';
 import CenterPanel from './CenterPanel';
@@ -217,8 +215,8 @@ const SentinelStudio: React.FC<SentinelStudioProps> = ({ onNavigateToSettings })
   }, [selectedIssue, activeFile, snippet]);
 
   return (
-    <div className="h-full w-full glass-effect rounded-lg overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-      <div className="lg:col-span-3">
+    <div className="h-full w-full bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl animate-fade-in-up">
+      <div className="lg:col-span-3 h-full overflow-hidden">
         <LeftPanel
           inputMode={inputMode} setInputMode={setInputMode} selectedRepo={selectedRepo}
           setSelectedRepo={setSelectedRepo} activeFile={activeFile} setActiveFile={setActiveFile}
@@ -228,14 +226,14 @@ const SentinelStudio: React.FC<SentinelStudioProps> = ({ onNavigateToSettings })
           isAutoAnalyzing={isAutoAnalyzing}
         />
       </div>
-      <div className="lg:col-span-5">
+      <div className="lg:col-span-5 h-full overflow-hidden border-t lg:border-t-0 lg:border-l border-white/5">
         <CenterPanel
           activeFile={activeFile || (snippet ? { name: 'Snippet', language: 'plaintext', content: snippet } : null)}
           issues={issues} selectedIssue={selectedIssue} fixDiff={fixDiff}
           isLoading={isLoading}
         />
       </div>
-      <div className="lg:col-span-4">
+      <div className="lg:col-span-4 h-full overflow-hidden border-t lg:border-t-0 lg:border-l border-white/5">
         <RightPanel
           issues={issues} isLoading={isLoading} selectedIssue={selectedIssue}
           setSelectedIssue={setSelectedIssue} onApplyFix={handleApplyFix}
