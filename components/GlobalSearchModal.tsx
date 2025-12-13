@@ -116,27 +116,27 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-start justify-center pt-20" onClick={onClose}>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-start justify-center pt-20" onClick={onClose}>
                     <motion.div
                         initial={{ opacity: 0, y: -20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -20, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="bg-black/80 backdrop-blur-xl rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-2xl flex flex-col border border-white/10 overflow-hidden"
+                        className="bg-black/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col border border-white/10 overflow-hidden"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="relative p-4 border-b border-white/10 bg-white/5">
-                            <SearchIcon className="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <div className="relative p-4 border-b border-white/5 bg-white/5">
+                            <SearchIcon className="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-gray-500" />
                             <input
                                 ref={inputRef}
                                 type="text"
                                 value={query}
                                 onChange={e => setQuery(e.target.value)}
-                                placeholder="Search for pages or repositories..."
-                                className="w-full bg-transparent border-none pl-10 p-2 text-white focus:outline-none placeholder:text-gray-500 font-medium text-lg"
+                                placeholder="Search commands..."
+                                className="w-full bg-transparent border-none pl-10 p-2 text-white focus:outline-none placeholder:text-gray-600 text-lg"
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-2">
-                                <span className="text-xs text-gray-500 bg-white/10 px-2 py-1 rounded border border-white/5">ESC</span>
+                                <span className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded">ESC</span>
                             </div>
                         </div>
 
@@ -147,18 +147,18 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                                         <li key={`${item.type}-${item.id}`}>
                                             <button
                                                 onClick={() => { item.action(); onClose(); }}
-                                                className={`w-full flex items-center space-x-4 p-3 rounded-xl text-left transition-all duration-200 group ${selectedIndex === index ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30' : 'hover:bg-white/5 border border-transparent'}`}
+                                                className={`w-full flex items-center space-x-4 p-3 rounded-xl text-left transition-all duration-200 group ${selectedIndex === index ? 'bg-white/10' : 'hover:bg-white/5'}`}
                                             >
-                                                <div className={`flex-shrink-0 p-2 rounded-lg transition-colors ${selectedIndex === index ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-white/5 text-gray-400 group-hover:text-white group-hover:bg-white/10'}`}>
+                                                <div className={`flex-shrink-0 p-2 rounded-lg transition-colors ${selectedIndex === index ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-500 group-hover:text-gray-300'}`}>
                                                     {item.icon}
                                                 </div>
                                                 <div className="overflow-hidden flex-grow">
-                                                    <p className={`font-bold text-sm truncate ${selectedIndex === index ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{item.title}</p>
-                                                    {item.description && <p className="text-xs text-gray-500 truncate group-hover:text-gray-400">{item.description}</p>}
+                                                    <p className={`font-medium text-sm truncate ${selectedIndex === index ? 'text-white' : 'text-gray-400 group-hover:text-white'}`}>{item.title}</p>
+                                                    {item.description && <p className="text-xs text-gray-600 truncate group-hover:text-gray-500">{item.description}</p>}
                                                 </div>
                                                 {selectedIndex === index && (
                                                     <motion.div layoutId="enter-icon" className="text-white">
-                                                        <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded border border-blue-500/30">Jump to</span>
+                                                        <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">Enter</span>
                                                     </motion.div>
                                                 )}
                                             </button>
@@ -168,15 +168,15 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                             ) : (
                                 <div className="p-12 text-center text-gray-500 flex flex-col items-center">
                                     <SearchIcon className="w-12 h-12 mb-4 opacity-20" />
-                                    <p>No results found for "{query}"</p>
+                                    <p className="text-sm">No results found for "{query}"</p>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-3 bg-black/40 border-t border-white/5 flex items-center justify-between text-xs text-gray-500">
+                        <div className="p-3 bg-black/40 border-t border-white/5 flex items-center justify-between text-xs text-gray-600">
                             <div className="flex items-center space-x-4">
-                                <span className="flex items-center"><span className="bg-white/10 px-1.5 py-0.5 rounded mr-1.5">↑↓</span> to navigate</span>
-                                <span className="flex items-center"><span className="bg-white/10 px-1.5 py-0.5 rounded mr-1.5">↵</span> to select</span>
+                                <span className="flex items-center"><span className="bg-white/5 px-1.5 py-0.5 rounded mr-1.5">↑↓</span> Navigate</span>
+                                <span className="flex items-center"><span className="bg-white/5 px-1.5 py-0.5 rounded mr-1.5">↵</span> Select</span>
                             </div>
                             <span>Sentinel Command Palette</span>
                         </div>

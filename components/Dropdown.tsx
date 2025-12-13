@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon } from './icons';
 
 export interface DropdownItem {
     id: string;
@@ -46,7 +45,7 @@ const Dropdown: React.FC<DropdownProps> = ({ trigger, items, align = 'right', wi
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-2 ${width} bg-[#050505] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl`}
+                        className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-2 ${width} bg-black/90 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl`}
                     >
                         <div className="py-1">
                             {items.map((item) => (
@@ -59,15 +58,15 @@ const Dropdown: React.FC<DropdownProps> = ({ trigger, items, align = 'right', wi
                                         }
                                     }}
                                     disabled={item.disabled}
-                                    className={`w-full text-left px-4 py-3 text-sm flex items-center space-x-3 transition-colors ${item.disabled
-                                            ? 'opacity-50 cursor-not-allowed text-gray-500'
-                                            : item.danger
-                                                ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
-                                                : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                                    className={`w-full text-left px-4 py-2.5 text-sm flex items-center space-x-3 transition-all duration-200 ${item.disabled
+                                        ? 'opacity-50 cursor-not-allowed text-gray-600'
+                                        : item.danger
+                                            ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
+                                            : 'text-gray-300 hover:bg-white/5 hover:text-white'
                                         }`}
                                 >
-                                    {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-                                    <span className="font-medium truncate">{item.label}</span>
+                                    {item.icon && <span className="flex-shrink-0 opacity-70">{item.icon}</span>}
+                                    <span className="truncate">{item.label}</span>
                                 </button>
                             ))}
                         </div>
